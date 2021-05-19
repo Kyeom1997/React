@@ -4,7 +4,6 @@ import Counter from './Counter';
 
 class App extends Component {
   render() {
-    return <MyName />;
     return <Counter />;
   }
 }
