@@ -782,3 +782,525 @@ export default App;
 
 <br>
 JSX 내부에서 주석을 작성할 때는 {/*...*/}와 같은 형식으로 작성합니다. 이렇게 여러 줄로 작성할 수도 있습니다. 그리고 시작 태그를 여러 줄로 작성할 때는 그 내부에서 // ... 과 같은 형태의 주석도 작성할 수 있습니다. 만약 일반 자바스크립트에서 주석을 작성할 때처럼 아무 데나 주석을 작성하면 그 주석은 페이지에 고스란히 나타납니다.
+
+---
+
+<br>
+
+# 3장. 컴포넌트
+
+<br>
+
+## 3.1 클래스형 컴포넌트
+
+<br>
+
+컴포넌트를 선언하는 방식은 두 가지입니다. 하나는 함수형 컴포넌트이고, 또 다른 하나는 클래스형 컴포넌트입니다.
+
+```js
+import React, { Component } from "react";
+
+class App extends Component {
+  render() {
+    const name = "react";
+    return <div className="react">{name}</div>;
+  }
+}
+
+export default App;
+```
+
+<br>
+클래스형 컴포넌트로 바뀌었지만 역할은 이전에 보았던 함수형 컴포넌트와 똑같습니다. 클래스형 컴포넌트와 함수형 컴포넌트의 차이점은 클래스형 컴포넌트의 경우 이후 배울 state 기능 및 라이프사이클 기능을 사용할 수 있다는 것과 임의 메서드를 정의할 수 있다는 것입니다.
+<br><br>
+
+> <br>ES6의 클래스 문법
+> <br><br>
+> ES6 이전에는 자바스크립트에 클래스(class)가 없었습니다. 개념 자체는 있었지만, 그것을 구현하려면 class 대신에 prototype이라는 문법을 사용하여 다음과 같이 작업해야 했습니다.
+> <br><br>
+
+```js
+function Dog(name) {
+  this.name = name;
+}
+
+Dog.prototype.say = function () {
+  console.log(this.name + ": 멍멍 ");
+};
+var dog = new Dog("검둥이");
+dog.say(); // 검둥이: 멍멍
+```
+
+> <br>ES6 문법부터는 이것과 기능이 똑같은 코드를 class를 사용하여 다음과 같이 작성할 수 있습니다.
+> <br><br>
+
+```js
+class Dog {
+  constructor(
+    name //  class 내에서 객체를 생성하고 초기화하기 위한 특별한 메서드
+  ) {
+    this.name = name;
+  }
+  say() {
+    console.log(this.name + ": 멍멍");
+  }
+}
+
+const dog = new Dog("흰둥이");
+dog.say(); // 흰둥이: 멍멍
+```
+
+<br>
+
+클래스형 컴포넌트에서는 render 함수가 꼭 있어야 하고, 그 안에서 보여 주어야 할 JSX를 반환해야 합니다. <br>
+컴포넌트를 선언할 수 있는 두 가지 방법 중 어느 상황에 함수형 컴포넌트를 사용해야 할까요?
+<br><br>
+함수형 컴포넌트의 장점을 나열해 보면 다음과 같습니다. 우선 클래스형 컴포넌트보다 선언하기가 훨씬 편합니다. 메모리 자원도 클래스형 컴포넌트보다 덜 사용합니다. 또한, 프로젝트를 완성하여 빌드한 후 배포할 때도 함수형 컴포넌트를 사용하는 것이 결과물의 파일 크기가 더 작습니다.
+<br><br>
+함수형 컴포넌트의 주요 단점은 state와 라이프사이클 API의 사용이 불가능하다는 점인데요. 이 단점은 리액트 v16.8 어데이트 이후 Hooks라는 기능이 도입되면서 해결되었습니다. 완전히 클래스형 컴포넌트와 똑같이 사용할 수 있는 것은 아니지만 조금 다른 방식으로 비슷한 작업을 할 수 있게 되었습니다.
+<br><br>
+리액트 공식 매뉴얼에서는 컴포넌트를 새로 작성할 때 함수형 컴포넌트와 Hooks를 사용하도록 권장하고 있습니다. 하지만 그렇다고 해서 클래스형 컴포넌트가 사라지는 것은 아니므로 클래스형 컴포넌트의 기능은 꼭 알아 두어야 합니다.
+
+<br><br>
+
+---
+
+## 3.2 첫 컴포넌트 생성
+
+<br>
+첫 번째 컴포넌트를 만들어 봅시다. 먼저 함수형 컴포넌트로 작성하고, 나중에 클래스형 컴포넌트로도 작성해 보겠습니다.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = () => {
+  return <div>나의 새롭고 멋진 컴포넌트</div>;
+};
+
+export default MyComponent;
+```
+
+<br>
+함수를 작성할 때 function 키워드를 사용하는 대신에 () => {}를 사용하여 함수를 만들어 주었습니다. 이는 ES6에 도입된 화살표 함수 문법입니다.
+<br><br>
+
+> <br>ES6의 화살표 함수
+> <br><br> 화살표 함수(arrow function)는 ES6 문법에서 함수를 표현하는 새로운 방식입니다. 그렇다고 해서 기존 function을 이용한 함수 선언 방식을 아예 대체하지는 않습니다. 사용 용도가 조금 다릅니다. 이 문법은 주로 함수를 파라미터로 전달할 때 유용합니다. <br><br>
+
+```js
+setTimeout(function () {
+  console.log("hello world");
+}, 1000);
+
+setTimeout(() => {
+  console.log("hello world");
+}, 1000);
+```
+
+> <br> 이 문법이 기존 function을 대체할 수 없는 것은 용도가 다르기 때문입니다. 무엇보다 서로 기리키고 있는 this 값이 다릅니다. 다음 코드를 한번 확인해 보세요. <br><br>
+
+```js
+function BlackDog() {
+  this.name = "흰둥이";
+  return {
+    name: "검둥이",
+    bark: function () {
+      console.log(this.name + ": 멍멍!");
+    },
+  };
+}
+
+const blackDog = new BlackDog();
+blackDog.bark(); // 검둥이: 멍멍!
+
+function WhiteDog() {
+  this.name = "흰둥이";
+  return {
+    name: "검둥이",
+    bark: () => {
+      console.log(this.name + ": 멍멍!");
+    },
+  };
+}
+
+const whiteDog = new WhiteDog();
+whiteDog.bark(); // 흰둥이: 멍멍!
+```
+
+> <br>function( )을 사용했을 때는 검둥이가 나타나고, ( ) => 를 사용했을 때는 흰둥이가 나타납니다. 일반 함수는 자신이 종속된 객체를 this로 가리키며, 화살표 함수는 자신이 종속된 인스턴스를 가리킵니다.<br><br>
+
+<br>
+
+### 3.2.3 모듈 내보내기 및 불러오기
+
+<br>
+
+#### 3.2.3.1 모듈 내보내기(export)
+
+<br>
+방금 작성한 컴포넌트에서 맨 아래 코드를 확인해 보세요. 
+<br><br>
+
+```js
+export default MyComponent;
+```
+
+<br>
+이 코드는 다른 파일에서 이 파일을 import할 때, 위에서 선언한 MyComponent 클래스를 불러오도록 설정합니다.
+<br><br>
+
+#### 3.2.3.2 모듈 불러오기 (import)
+
+<br>
+이번에는 App 컴포넌트에서 MyComponent 컴포넌트를 불러와서 사용해 봅시다.
+<br><br>
+
+```js
+import React from "react";
+import MyComponent from "./MyComponent";
+
+const App = () => {
+  return <MyComponent />;
+};
+
+export default App;
+```
+
+<br>
+위 코드에서 import 구문을 사용하는 두 번째 줄은 우리가 만든 MyComponent 컴포넌트를 불러옵니다.
+<br><br>
+
+---
+
+## 3.3 props
+
+<br>
+props는 porperties를 줄인 표현으로 컴포넌트 속성을 설정할 때 사용하는 요소입니다. props 값은 해당 컴포넌트를 불러와 사용하는 부모 컴포넌트(현 상황에서는 App 컴포넌트가 부모 컴포넌트입니다)에서 설정할 수 있습니다.
+<br><br>
+
+### 3.3.1 JSX 내부에서 props 렌더링
+
+<br>
+우선 MyComponent 컴포넌트를 수정하여 해당 컴포넌트에서 name이라는 props를 렌더링하도록 설정해 봅시다. props 값은 컴포넌트 함수의 파라미터로 받아 와서 사용할 수 있습니다.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = (props) => {
+  return <div>안녕하세요, 제 이름은 {props.name}입니다.</div>;
+};
+
+export default MyComponent;
+```
+
+<br>
+
+### 3.3.2 컴포넌트를 사용할 때 props 값 지정하기
+
+<br>
+App 컴포넌트에서 MyComponent의 props 값을 지정해 보겠습니다. 
+<br><br>
+
+```js
+import React from "react";
+import MyComponent from "./MyComponent";
+
+const App = () => {
+  return <MyComponent name="React" />;
+};
+
+export default App;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/124785857-2ede5f80-df82-11eb-9cd5-f45e8c50a398.png)
+
+<br>
+
+### 3.3.3 props 기본값 설정: defaultProps
+
+<br>
+
+```js
+(...)
+  return <MyComponent />;
+(...)
+```
+
+<br>
+현재 name 값을 지정하지 않았기 때문에 브라우저에는 '안녕하세요, 제 이름은 입니다.'라는 내용이 보일 것입니다. 지금처럼 props 값을 따로 지정하지 않았을 때 보여 줄 기본값을 설정하는 defaultProps에 대해 알아봅시다. 이 값을 설정하는 방법은 다음과 같습니다.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = (props) => {
+  return <div>안녕하세요, 제 이름은 {props.name}입니다.</div>;
+};
+
+MyComponent.defaultProps = {
+  name: "기본 이름",
+};
+
+export default MyComponent;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/124786530-bdeb7780-df82-11eb-8074-c7f3a1068738.png)
+<br>
+
+### 3.3.4 태그 사이의 내용을 보여 주는 children
+
+<br>
+리액트 컴포넌트를 사용할 때 컴포넌트 태그 사이의 내용을 보여 주는 props가 있는데요. 바로 children입니다.
+<br><br>
+
+```js
+import React from "react";
+import MyComponent from "./MyComponent";
+
+const App = () => {
+  return <MyComponent>리액트</MyComponent>;
+};
+
+export default App;
+```
+
+<br>
+위 코드에서 MyComponent 태그 사이에 작성한 리액트라는 문자열을 MyComponent 내부에서 보여 주려면 props.children 값을 보여 주어야 합니다.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = (props) => {
+  return (
+    <div>
+      안녕하세요, 제 이름은 {props.name}입니다. <br />
+      children 값은 {props.children}
+      입니다.
+    </div>
+  );
+};
+
+MyComponent.defaultProps = {
+  name: "기본 이름 ",
+};
+
+export default MyComponent;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/124788281-2d159b80-df84-11eb-85b9-4563b32c759b.png)
+<br>
+
+### 3.3.5 비구조화 할당 문법을 통해 prop 내부 값 추출하기
+
+<br>
+현재 MyComponent에서 props 값을 조회할 때마다 props.name, props.children과 같이 props.이라는 키워드를 앞에 붙여 주고 있습니다. 이러한 작업을 더 편하게 하기 위해 ES6의 비구조화 할당 문법을 사용하여 내부 값을 바로 추출하는 방법을 알아보겠습니다.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = (props) => {
+  const { name, children } = props;
+  return (
+    <div>
+      안녕하세요, 제 이름은 {name}입니다. <br />
+      children 값은 {children}입니다.
+    </div>
+  );
+};
+
+MyComponent.defaultPropps = {
+  name: "기본 이름",
+};
+
+export default MyComponent;
+```
+
+<br>
+
+이렇게 코드를 작성하면 name 값과 children 값을 더 짧은 코드로 사용할 수 있습니다. <br>
+방금 사용한, 객체에서 값을 추출하는 문법을 비구조화 할당(destructuring assignment)이라고 부릅니다. 이 문법은 구조 분해 문법이라고도 불리며, 함수의 파라미터 부분에서도 사용할 수 있습니다. 만약 함수의 파라미터가 객체라면 그 값을 바로 비구조화해서 사용하는 것이죠.
+<br><br>
+
+```js
+import React from "react";
+
+const MyComponent = ({ name, children }) => {
+  return (
+    <div>
+      안녕하세요, 제 이름은 {name}입니다. <br />
+      children 값은 {children} 입니다.
+    </div>
+  );
+};
+
+MyComponent.defaultProps = {
+  name: "기본 이름",
+};
+
+export default MyComponent;
+```
+
+<br>
+
+### 3.3.6 propTypes를 통한 props 검증
+
+<br>
+컴포넌트의 필수 props를 지정하거나 props의 타입(type)을 지정할 때는 propType를 사용합니다. 컴포넌트의 propTypes를 지정하는 방법은 defaultProp을 설정하는 것과 비슷합니다. 우선 propTypes를 사용하려면 코드 상단에 import 구문을 사용하여 불러와야 합니다.
+<br><br>
+
+```js
+import React from 'react';
+import propTypes from 'prop-types';
+
+const MyComponent = ({ name, children }) => {
+  (...)
+
+MyComponent.propTypes = {
+  name: Proptypes.string
+};
+
+export default MyComponent;
+```
+
+<br>
+이렇게 설정해 주면 name 값은 무조건 문자열(string) 형태로 전달해야 된다는 것을 의미합니다. 만약 컴포넌트에 설정한 props가 propTypes에서 지정한 형태와 일치하지 않는다면 브라우저 개발자 도구의 Console 탭에 다음과 같은 결과가 나타납니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/124791512-13c21e80-df87-11eb-8222-f51137f9b011.png)
+<br>
+
+값이 나타나기는 했지만, 콘솔에 경고 메시지를 출력하여 개발자에게 propTypes가 잘못되었다는 것을 알려 줍니다.
+<br>
+
+#### 3.3.6.1 isRequired를 사용하여 필수 propTypes 설정
+
+<br>
+propTypes를 지정하지 않았을 때 경고 메시지를 띄워 주는 작업을 해 봅시다. propTypes를 지정할 때 뒤에 isRequired를 붙여 주면 됩니다. 이번에는 favoriteNumber라는 숫자를 필수 props로 지정해 보겠습니다.
+<br><br>
+
+```js
+import React from "react";
+import PropTypes from "prop-types";
+
+const MyComponent = ({ name, favoriteNumber, children }) => {
+  return (
+    <div>
+      안녕하세요, 제 이름은 {name}입니다. <br />
+      children 값은 {children}
+      입니다.
+      <br />
+      제가 좋아하는 숫자는 {favoriteNumber}입니다.
+    </div>
+  );
+};
+
+MyComponent.defaultProps = {
+  name: "기본 이름",
+};
+
+MyComponent.propTypes = {
+  name: PropTypes.string,
+  favoriteNumber: PropTypes.number.isRequired,
+};
+
+export default MyComponent;
+```
+
+<br>
+코드를 저장하고 다시 개발자 도구의 Console을 확인해 보세요. 아직 favoriteNumber를 설정하지 않았기 때문에 다음과 같은 경고가 나타날 것입니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/124792292-d5792f00-df87-11eb-8b33-99fbad9d7645.png)
+
+<br>
+
+#### 3.3.6.2 더 많은 PropTypes 종류
+
+<br>
+PropTypes에서는 여러 가지 종류를 설정할 수 있습니다. 어떤 것이 있는지 짚고 넘어가 봅시다.<br><br>
+
+> [더 많은 PropTypes 종류](https://thebook.io/080203/ch03/03/06/02/).
+
+<br>
+
+### 3.3.7 클래스형 컴포넌트에서 props 사용하기
+
+<br>
+클래스형 컴포넌트에서 props를 사용할 때는 render 함수에서 this.props를 조회하면 됩니다. 그리고 defaultProps와 propTypes는 똑같은 방식으로 설정할 수 있습니다.
+<br><br>
+
+```js
+import React, { Component } from ‘react‘;
+import PropTypes from ‘prop-types‘;
+
+
+class MyComponent extends Component {
+  render() {
+    const { name, favoriteNumber, children } = this.props; // 비구조화 할당
+    return (
+      <div>
+        안녕하세요, 제 이름은 {name}입니다. <br />
+        children 값은 {children}
+        입니다.
+        <br />
+        제가 좋아하는 숫자는 {favoriteNumber}입니다.
+      </div>
+    );
+  }
+}
+
+
+
+MyComponent.defaultProps = {
+  name: '기본 이름'
+};
+
+
+
+MyComponent.propTypes = {
+  name: PropTypes.string,
+  favoriteNumber: PropTypes.number.isRequired
+};
+
+
+
+export default MyComponent;
+
+// defaultProps와 propTypes class 내부에서 지정하는 방법
+
+import React, { Component } from ‘react‘;
+import PropTypes from ‘prop-types‘;
+
+
+class MyComponent extends Component {
+  static defaultProps = {
+    name: '기본 이름'
+  };
+  static propTypes = {
+    name: PropTypes.string,
+    favoriteNumber: PropTypes.number.isRequired
+  };
+  render() {
+    const { name, favoriteNumber, children } = this.props; // 비구조화 할당
+    return (…);
+  }
+}
+
+
+
+export default MyComponent;
+```
+
+<br>
+
+---
