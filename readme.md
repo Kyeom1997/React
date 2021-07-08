@@ -1304,3 +1304,327 @@ export default MyComponent;
 <br>
 
 ---
+
+## 3.4 state
+
+<br>
+리액트에서 state는 컴포넌트 내부에서 바뀔 수 있는 값을 의미합니다. props는 컴포넌트가 사용되는 과정에서 부모 컴포넌트가 설정하는 값이며, 컴포넌트 자신은 해당 props를 읽기 전용으로만 사용할 수 있습니다. props를 바꾸려면 부모 컴포넌트에서 바꾸어 주어야 합니다.  <br><br>
+리액트에서는 두 가지 종류의 state가 있습니다. 하나는 클래스형 컴포넌트가 지니고 있는 state이고, 다른 하나는 함수형 컴포넌트에서 useState라는 함수를 통해 사용하는 state입니다.
+<br><br>
+
+### 3.4.1 클래스형 컴포넌트의 state
+
+```js
+import React, { Component } from "react";
+
+class Counter extends Component {
+  constructor(props) {
+    super(props);
+    // state의 초깃값 설정하기
+    this.tate = {
+      number: 0,
+    };
+  }
+  render() {
+    const { number } = this.state; // state를 조회할 때는 this.state로 조회합니다.
+    return (
+      <div>
+        <h1>{number}</h1>
+        <button
+          //onclick을 통해 버튼이 클릭되었을 때 호출할 함수를 지정합니다.
+          onclick={() => {
+            //this.setState를 사용하여 state에 새로운 값을 넣을 수 있습니다.
+            this.setState({ number: number + 1 });
+          }}
+        >
+          +1
+        </button>
+      </div>
+    );
+  }
+}
+
+export default Counter;
+```
+
+<br>
+
+위 파일에서 각 코드가 어떤 역할을 하는지 알아보겠습니다.
+<br><br>
+컴포넌트에 state를 설정할 때는 다음과 같이 constructor 메서드를 작성하여 설정합니다.
+<br><Br>
+
+```js
+constructor(props) {
+  super(props);
+  // state의 초깃값 설정하기
+  this.tate = {
+    number: 0
+  };
+}
+```
+
+<br>
+
+이는 컴포넌트의 생성자 메서드인데요. 클래스형 컴포넌트에서 constructor를 작성할 때는 반드시 super(props)를 호출해 주어야 합니다. 이 함수가 호출되면 현재 클래스형 컴포넌트가 상속받고 있는 리액트의 Component 클래스가 지닌 생성자 함수를 호출해 줍니다.
+<br><br>
+그 다음에는 this.state 값에 초깃값을 설정해 주었습니다. 컴포넌트의 state는 객체 형식이어야 합니다.
+<br><br>
+
+```js
+render() {
+  const { number } = this.state; // state를 조회할 때는 this.state로 조회합니다.
+  return (
+    <div>
+    <h1>{ number }</h1>
+    <button
+    //onclick을 통해 버튼이 클릭되었을 때 호출할 함수를 지정합니다.
+    onclick={() => {
+      //this.setState를 사용하여 state에 새로운 값을 넣을 수 있습니다.
+      this.setState({ number: number + 1 });
+    }}
+  >
+    +1
+    </button>
+  </div>
+  );
+}
+```
+
+<br>
+render 함수에서 현재 state를 조회할 때는 this.state를 조회하면 됩니다. 그리고 button 안에 onClick이라는 값을 props로 넣어 주었는데, 이는 버튼이 클릭될 때 호출시킬 함수를 설정할 수 있게 해 줍니다. 이를 이벤트를 설정한다고 합니다.
+<br><br>
+이벤트로 설정할 함수를 넣어 줄 때는 화살표 함수 문법을 사용하여 넣어 주어야 합니다. 함수 내부에서는 this.setState라는 함수를 사용했는데요. 이 함수가 state 값을 바꿀 수 있게 해 줍니다. 
+<br><br>
+
+#### 3.4.1.1 state 객체 안에 여러 값이 있을 때
+
+<br>
+state 객체 안에는 여러 값이 있을 수 있습니다.
+<br><br>
+
+```js
+(...)
+  render() {
+    const { number, fixedNumber } = this.state; // state를 조회할 때는 this.state로 조회합니다.
+    return (
+      <div>
+        <h1>{number}</h1>
+        <h2>바뀌지 않는 값: {fixedNumber}</h2>
+        <button
+          // onClick을 통해 버튼이 클릭되었을 때 호출할 함수를 지정합니다.
+          onClick={() => {
+            // this.setState를 사용하여 state에 새로운 값을 넣을 수 있습니다.
+            this.setState({ number: number + 1 });
+          }}
+        >
+          +1
+        </button>
+      </div>
+    );
+  }
+(...)
+```
+
+<br>
+현재 state 안에 fixedNumber라는 또 다른 값을 추가해 주었습니다. 버튼이 클릭될 때 fixedNumber 값은 그대로 두고 number 값만 바꿀 것인데요. 그렇다고 해서 this.setState 함수를 사용할 때 인자로 전달되는 개체 내부에 fixedNumber를 넣어 주지는 않았습니다. this.setState 함수는 인자로 전달된 객체 안에 들어 있는 값만 바꾸어 줍니다.
+<br><br>
+
+#### 3.4.1.2 state를 constructor에서 꺼내기
+
+<br>
+앞에서 state의 초깃값을 지정하기 위해 constructor 메서드를 선언해 주었는데요. 또 다른 방식으로도 state의 초깃값을 지정해 줄 수 있습니다.
+<br><br>
+
+```js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+  state = {
+    number: 0,
+    fixedNumber: 0
+  };
+  render() {
+    const { number, fixedNumber } = this.state; // state를 조회할 때는 this.state로 조회합니다.
+    return (...);
+  }
+}
+
+export default Counter;
+```
+
+<br>
+이렇게 하면 constructor 메서드를 선언하지 않고도 state 초깃값을 설정할 수 있습니다.
+<br><br>
+
+#### 3.4.1.3 this.setState에 객체 대신 함수 인자 전달하기
+
+<br>
+this.setState를 사용하여 state 값을 업데이트할 때는 상태가 비동기적으로 업데이트됩니다. 만약 다음과 같이 onClick에 설정한 함수 내부에서 this.setState를 두 번 호출하면 어떻게 될까요?
+<br><br>
+
+```js
+onClick={() => {
+  // this.setState를 사용하여 state에 새로운 값을 넣을 수 있습니다.
+  this.setState({ number: number + 1 });
+  this.setState({ number: this.state.number + 1 });
+}}
+```
+
+<br>
+코드를 위와 같이 작성하면 this.setState를 두 번 사용하는 것임에도 불구하고 버튼을 클릭할 때 숫자가 1씩 더해집니다. this.setState를 사용한다고 해서 state 값이 바로 바뀌지는 않기 때문입니다. 이에 대한 해결책은 this.setState를 사용할 때 객체 대신에 함수를 인자로 넣어 주는 것입니다.
+<br><br>
+
+```js
+this.setState((prevState, props)) => {
+  return {
+    //업데이트 하고 싶은 내용
+  }
+})
+```
+
+<br>
+여기서 prevState는 기존 상태이고, props는 현재 지니고 있는 props를 가리킵니다.
+<br><br>
+
+### 3.4.2 함수형 컴포넌트에서 useState 사용하기
+
+<br>
+리액트 16.8 이전 버전에서는 함수형 컴포넌트에서 state를 사용할 수 없었습니다. 하지만 16.8 이후부터는 useState라는 함수를 사용하여 함수형 컴포넌트에서도 state를 사용할 수 있게 되었습니다. <br><br>
+
+#### 3.4.2.1 배열 비구조화 할당
+
+<br>
+Hooks를 사용하기 전에 배열 비구조화 할당이라는 것을 알아봅시다. 배열 비구조화 할당은 이전에 배운 객체 비구조화 할당과 비슷합니다. 즉, 배열 안에 들어 있는 값을 쉽게 추출할 수 있도록 해 주는 문법입니다.
+<br><br>
+
+```js
+const array = [1, 2];
+const one = array[0];
+const tow = array[1];
+
+// 배열 비구조화 할당 사용
+const array = [1, 2];
+const [one, two] = array;
+```
+
+<br>
+
+#### 3.4.2.2 useState 사용하기
+
+<br>
+배열 비구조화 할당 문법을 알고 나면 useState 사용 방법을 쉽게 이해할 수 있습니다.
+<br><br>
+
+```js
+import React, { useState } from "react";
+
+const Say = () => {
+  const [message, setMessage] = useState("");
+  const onClickEnter = () => setMessage("안녕하세요!");
+  const onClickLeave = () => setMessage("안녕히 가세요!");
+
+  return (
+    <div>
+      <button onClick={onClickEnter}>입장</button>
+      <button onClick={onClickLeave}>퇴장</button>
+      <h1>{message}></h1>
+    </div>
+  );
+};
+
+export default Say;
+```
+
+<br>
+useState 함수의 인자에는 상태의 초깃값을 넣어 줍니다. 클래스형 컴포넌트에서의 state 초깃값은 객체 형태를 넣어 주어야 한다고 배웠는데요. useState에서는 반드시 객체가 아니어도 상관없습니다. 값의 형태는 자유입니다. 숫자일 수도, 문자열일 수도, 객체일 수도, 배열일 수도 있습니다.<br><br>
+함수를 호출하면 배열이 반환되는데요. 배열의 첫 번째 원소는 현재 상태이고, 두 번째 원소는 상태를 바꾸어 주는 함수입니다. 이 함수를 세터(Setter) 함수라고 부릅니다. 그리고 배열 비구조화 할당을 통해 이름을 자유롭게 정해 줄 수 있습니다.
+<br><br>
+
+#### 3.4.2.3 한 컴포넌트에서 useState 여러 번 사용하기
+
+<br>
+useState는 한 컴포넌트에서 여러 번 사용해도 상관없습니다.
+<br><br>
+
+```js
+import React, { useState } from "react";
+
+const Say = () => {
+  const [message, setMessage] = useState("");
+  const onClickEnter = () => setMessage("안녕하세요!");
+  const onClickLeave = () => setMessage("안녕히 가세요!");
+
+  const [color, setColor] = useState("black");
+
+  return (
+    <div>
+      <button onClick={onClickEnter}>입장</button>
+      <button onClick={onClickLeave}>퇴장</button>
+      <h1 style={{ color }}>{message}</h1>
+      <button style={{ color: "red" }} onClick={() => setColor("red")}>
+        빨간색
+      </button>
+      <button style={{ color: "green" }} onClick={() => setColor("green")}>
+        초록색
+      </button>
+      <button style={{ color: "blue" }} onClick={() => setColor("blue")}>
+        파란색
+      </button>
+    </div>
+  );
+};
+
+export default Say;
+```
+
+<br>
+
+## 3.5 state를 사용할 때 주의 사항
+
+<br>
+클래스형 컴포넌트든 함수형 컴포넌트든 state를 사용할 때는 주의해야 할 사항이 있습니다. state 값을 바꾸어야 할 때는 setState 혹은 useState를 통해 전달 받은 세터 함수를 사용해야 합니다. 예를 들어 다음 코드는 잘못된 코드입니다.
+<br><br>
+
+```js
+// 클래스형 컴포넌트에서...
+this.state.number = this.state.number + 1;
+this.state.array = this.array.push(2);
+this.state.object.value = 5;
+
+// 함수형 컴포넌트에서..
+const [object, setObject] = useState({ a: 1, b: 1 });
+object.b = 2;
+```
+
+<br>
+그렇다면 배열이나 객체를 업데이트해야 할 때는 어떻게 해야 할까요? 이런 상황에서는 배열이나 객체 사본을 만들고 그 사본에 값을 업데이트한 후, 그 사본의 상태를 setState 혹은 세터 함수를 통해 업데이트합니다. 사본을 만들어서 업데이트하는 예시는 다음과 같습니다.
+<br><br>
+
+```js
+// 객체 다루기
+const object = { a: 1, b: 2, c: 3 };
+const nextObject = { ...object, b: 2 }; // 사본을 만들어서 b 값만 덮어 쓰기
+
+// 배열 다루기
+const array = [
+{ id: 1, value: true },
+{ id: 2, value: true },
+{ id: 3, value: false }
+];
+let nextArray = array.concat({ id: 4 }); // 새 항목 추가
+nextArray.filter(item => item.id != = 2); // id가 2인 항목 제거
+nextArray.map(item => (item.id === 1 ? { ...item, value: false } : item)); // id가 1인 항목의 value를 false로 설정
+```
+
+<br>
+객체애 대한 사본을 만들 때는 spread 연산자라 불리는 ...을 사용하여 처리하고, 배열에 대한 사본을 만들 때는 배열의 내장 함수들을 활용합니다.
+<br><br>
+
+---
+
+## 3.6 정리
+
+<br>
+props와 state는 둘 다 컴포넌트에서 사용하거나 렌더링할 데이터를 담고 있으므로 비슷해 보일 수 있지만, 그 역할은 매우 다릅니다. props는 부모 컴포넌트가 설정하고, state는 컴포넌트 자체적으로 지닌 값으로 컴포넌트 내부에서 값을 업데이트할 수 있습니다. <br><br>
+props를 사용한다고 해서 값이 무조건 고정적이지는 않습니다. 부모 컴포넌트의 state를 자식 컴포넌트의 props로 전달하고, 자식 컴포넌트에서 특정 이벤트가 발생할 때 부모 컴포넌트의 메서드를 호출하면 props도 유동적으로 사용할 수 있습니다.
