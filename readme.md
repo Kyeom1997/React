@@ -2442,3 +2442,364 @@ export default App;
 <br>
 컴포넌트 내부에서 DOM에 직접 접근해야 할 때는 ref를 사용합니다. 먼저 ref를 사용하지 않고도 원하는 기능을 구현할 수 있는 반드시 고려한 후에 활용해야 합니다. <br><br>
 이 시점에서 오해할 수 있는 부분이 있는데, 서로 다른 컴포넌트끼리 데이터를 교류할 때 ref를 사용하다면 이는 잘못 사용된 것입니다. 컴포넌트끼리 데이터를 교류할 때는 언제나 데이터를 부모 <-> 자식 흐름으로 교류해야 합니다.
+
+<br><br>
+
+---
+
+<br>
+
+# 6장. 컴포넌트 반복
+
+<br>
+웹 애플리케이션을 만들다 보면 다음과 같이 반복되는 코드를 작성할 때가 있습니다.
+<br><br>
+
+```html
+<li>...</li>
+```
+
+<Br>
+지금은 li 태그 하나 뿐이라 그렇게 문제가 되지는 않을 것 같습니다. 하지만 코드가 좀 더 복잡하다면 어떨까요? 코드양은 더더욱 늘어날 것이며, 파일 용량도 쓸데없이 증가하겠죠. 이는 낭비입니다. 또 보여 주어야 할 데이터가 유동적이라면 이런 코드로는 절대로 관리하지 못합니다. 이 장에서는 리액트 프로젝트에서 반복적인 내용을 효율적으로 보여 주고 관리하는 방법을 알아 보겠습니다.
+<br><br>
+
+---
+
+<br>
+
+## 6.1 자바스크립트 배열의 map() 함수
+
+<br>
+
+자바스크립트 배열 객체의 내장 함수인 map 함수를 사용하여 반복되는 컴포넌트를 렌더링할 수 있습니다. map 함수는 파라미터로 전달된 함수를 사용해서 배열 내 각 요소를 원하는 규칙에 따라 변환한 후 그 결과로 새로운 배열을 생성합니다.
+<br><br>
+
+### 6.1.1 문법
+
+<br>
+
+```js
+arr.map(callback, [thisArg]);
+```
+
+<br>
+
+이 함수의 파라미터는 다음과 같습니다.
+<br>
+
+- callback : 새로운 배열의 요소를 생성하는 함수로 파라미터는 다음 세 가지입니다.
+
+  - currentValue: 현재 처리하고 있는 요소
+  - index : 현재 처리하고 있는 요소의 index 값
+  - array : 현재 처리하고 있는 원본 배열
+    <br><br>
+
+- thisArg(선택 항목) : callback 함수 내부에서 사용할 this 레퍼런스
+  <br><br>
+
+### 6.1.2 예제
+
+<br>
+map 함수를 사용하여 배열 [1,2,3,4,5]의 각 요소를 제곱해서 새로운 배열을 생성하겠습니다.
+<br><br>
+
+```js
+var numbers = [1, 2, 3, 4, 5];
+
+var processed = numbers.map(function (num) {
+  return num * num;
+});
+
+console.log(processed);
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125201268-4763b800-e2a9-11eb-828c-b366b17b5783.png)
+
+<br>
+
+```js
+const numbers = [1, 2, 3, 4, 5];
+const result = numbers.map((num) => num * num);
+console.log(result);
+// ES6 문법으로 작성, var => const, function(...){...} => 화살표 함수
+```
+
+<br>
+
+---
+
+<br>
+
+## 6.2 데이터 배열을 컴포넌트 배열로 변환하기
+
+<br>
+6.1절에서는 기존 배열에 있는 값들을 제곱하여 새로운 배열을 생성했습니다. 똑같은 원리로 기존 배열로 컴포넌트로 구성된 배열을 생성할 수도 있답니다.
+<br><br>
+
+### 6.2.1 컴포넌트 수정하기
+
+<br>
+
+```js
+import React from "react";
+
+const IterationSample = () => {
+  const names = ["눈사람", "얼음", "눈", "바람"];
+  const nameList = names.map((name) => <li>{name}</li>);
+  return <ul>{nameList}</ul>;
+};
+
+export default IterationSample;
+```
+
+<br>
+문자열로 구성된 배열을 선언합니다. 그 배열 값을 사용하여 JSX 코드로 된 배열을 새로 생성한 후 nameList에 담습니다. map 함수에서 JSX를 작성할 때는 앞서 다룬 예제처럼 DOM 요소를 작성해도 되고, 컴포넌트를 사용해도 됩니다.
+<br><br>
+
+### 6.2.2 App 컴포넌트에서 예제 컴포넌트 렌더링
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125201448-2fd8ff00-e2aa-11eb-9e09-730a41e4e4da.png)
+
+<br>
+크롬 개발자 도구의 콘솔에서 "key" prop이 없다는 경고 메시지를 표시했습니다. key란 무엇일까요?
+<br><br>
+
+---
+
+<br>
+
+## 6.3 key
+
+<br>
+리액트에서 key는 컴포넌트 배열을 렌더링했을 때 어떤 원소에 변동이 있었는지 알아내려고 사용합니다. 예를 들어 유동적인 데이터를 다룰 때는 원소를 새로 생성할 수도, 제거할 수도, 수정할 수도 있죠. key가 없을 때는 Virtual DOM을 비교하는 과정에서 리스트를 순차적으로 비교하면서 변화를 감지합니다. 하지만 key가 있다면 이 값을 사용하여 어떤 변화가 일어났는지 더욱 빠르게 알아낼 수 있습니다.
+
+<br><br>
+
+### 6.3.1 key 설정
+
+<br>
+key 값을 설정할 때는 map 함수의 인자로 전달되는 함수 내부에서 컴포넌트 props를 설정하듯이 설정하면 됩니다. key 값은 언제나 유일해야 합니다. 따라서 데이터가 가진 고윳값을 key 값으로 설정해야 합니다. 예를 들어 다음과 같이 게시판의 게시물을 렌더링한다면 게시물 번호를 key 값으로 설정해야 합니다.
+<br><br>
+
+```js
+const articleList = articles.map((article) => (
+  <Article title={article.title} writer={article.writer} key={article.id} />
+));
+```
+
+<br>
+하지만 앞서 만들었던 예제 컴포넌트에는 이런 고유 번호가 없습니다. 이때는 map 함수에 전달되는 콜백 함수의 인수인 index 값을 사용하면 됩니다. 
+<br><br>
+
+```js
+import React from "react";
+
+const IterationSample = () => {
+  const names = ["눈사람", "얼음", "눈", "바람"];
+  const nameList = names.map((name, index) => <li key={index}>{name}</li>);
+  return <ul>{nameList}</ul>;
+};
+
+export default IterationSample;
+```
+
+<br>
+이제 개발자 도구에서 더 이상 경고 메시지를 표시하지 않습니다. 고유한 값이 없을 때만 index 값을 key로 사용해야 합니다. index를 key로 사용하면 배열이 변경될 때 효율적으로 리렌더링하지 못합니다.
+<br><br>
+
+---
+
+<br>
+
+## 6.4 응용
+
+<br>
+지금까지 배운 개념을 응용하여 고정된 배열을 렌더링하는 것이 아닌, 동적인 배열을 렌더링하는 것을 구현해 보겠습니다. 그리고 index 값을 key로 사용하면 리렌더링이 비효율적이라고 배웠는데, 이러한 상황에 어떻게 고윳값을 만들 수 있는지도 알아보겠습니다.
+<br><br>
+
+### 6.4.1 초기 상태 설정하기
+
+<br>
+IterationSample 컴포넌트에서 useState를 사용하여 상태를 설정하겠습니다. 세 가지 상태를 사용할 텐데 하나는 데이터 배열이고, 다른 하나는 텍스트를 입력할 수 있는 input의 상태입니다. 그럼 마지막 하나는 무엇일까요? 그것은 데이터 배열에서 새로운 항목을 추가할 때 사용할 고유 id를 위한 상태입니다.
+<br><br>
+
+```js
+import React, { useState } from 'react';
+
+const IterationSample = () => {
+  const [names, setNames] = useState([
+    { id: 1, text: '눈사람'}
+    { id: 2, text: '얼음'}
+    { id: 3, text: '눈'}
+    { id: 4, text: '바람'}
+  ]);
+  const [inputText, setInputText] = useState('');
+  const [nextId, setNextId] = useState(5); //새로운 항목을 추가할 때 사용할 id
+
+  const namesList = names.map(name => <li key={name.id}>{name.text}</li>);
+  return <ul>{namesList}</ul>;
+};
+
+export default IterationSample;
+```
+
+<br>
+이번에는 map 함수를 사용할 때 key 값을 index 대신 name.id 값으로 지정해 주었습니다.
+<br><br>
+
+### 6.4.2 데이터 추가 기능 구현하기
+
+<br>
+이제 새로운 이름을 등록할 수 있는 기능을 구현해 봅시다. 우선 ul 태그의 상단에 input과 button을 렌더링하고, input의 상태를 관리해 보세요.
+<br><br>
+
+```js
+import React, { useState } from "react";
+
+const IterationSample = () => {
+  const [names, setNames] = useState([
+    { id: 1, text: "눈사람" },
+    { id: 2, text: "얼음" },
+    { id: 3, text: "눈" },
+    { id: 4, text: "바람" },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [nextId, setNextId] = useState(5); // 새로운 항목을 추가할 때 사용할 id
+
+  const onChange = (e) => setInputText(e.target.value);
+
+  const namesList = names.map((name) => <li key={name.id}>{name.text}</li>);
+  return (
+    <>
+      <input value={inputText} onChange={onChange} />
+      <button>추가</button>
+      <ul>{namesList}</ul>
+    </>
+  );
+};
+
+export default IterationSample;
+```
+
+<br>
+그 다음에는 버튼을 클릭했을 때, 호출할 onClick 함수를 선언하여 버튼의 onClick 이벤트로 설정해 보세요. onClick 함수에서는 배열의 내장 함수 concat을 사용하여 새로운 항목을 추가한 배열을 만들고, setNames를 통해 상태를 업데이트해 줍니다.
+<br><br>
+
+```js
+import React, { useState } from 'react';
+
+
+const IterationSample = () => {
+  const [names, setNames] = useState([
+    { id: 1, text: '눈사람' },
+    { id: 2, text: '얼음' },
+    { id: 3, text: '눈' },
+    { id: 4, text: '바람' }
+  ]);
+  const [inputText, setInputText] = useState(“);
+  const [nextId, setNextId] = useState(5); // 새로운 항목을 추가할 때 사용할 id
+
+  const onChange = e => setInputText(e.target.value);
+  const onClick = () => {
+    const nextNames = names.concat({
+      id: nextId, // nextId 값을 id로 설정하고
+      text: inputText
+    });
+    setNextId(nextId + 1); // nextId 값에 1을 더해 준다.
+    setNames(nextNames); // names 값을 업데이트한다.
+    setInputText(''); // inputText를 비운다.
+  };
+
+
+
+const namesList = names.map(name => <li key={name.id}>{name.text}</li>);
+  return (
+    <>
+      <input value={inputText} onChange={onChange} />
+      <button onClick={onClick}>추가</button>
+      <ul>{namesList}</ul>
+    </>
+  );
+};
+
+
+
+export default IterationSample;
+```
+
+<br>
+배열에 새 항목을 추가할 때 배열의 push 함수를 사용하지 않고 concat을 사용했는데요. push 함수는 기존 배열 자체를 변경해 주는 반면, concat은 새로운 배열을 만들어 준다는 차이점이 있습니다. <br><br>
+리액트에서 상태를 업데이트할 때는 기존 상태를 그대로 두면서 새로운 값을 상태로 설정해야 합니다. 이를 불변성 유지라고 하는데요. 불변성 유지를 해 주어야 나중에 리액트 컴포넌트의 성능을 최적화할 수 있습니다.
+<br><br>
+onClick 함수에서 새로운 항목을 추가할 때 객체의 id 값은 nextId를 사용하도록 하고, 클릭될 때 마다 값이 1씩 올라가도록 구현했습니다. 추가로 button이 클릭될 때 기존의 input 내용을 비우는 것도 구현해 주었습니다.
+<br><br>
+
+### 6.4.3 데이터 제거 기능 구현하기
+
+<br>
+이번에는 각 항목을 더블클릭했을 때 해당 항목이 화면에서 사라지는 기능을 구현해 보겠습니다. 이번에도 마찬가지로 불변성을 유지하면서 업데이트해 주어야 합니다. 불변성을 유지하면서 배열의 특정 항목을 지울 때는 배열의 내장 함수 filter를 사용합니다.
+<br><br>
+
+```js
+import React, { useState } from 'react';
+
+
+const IterationSample = () => {
+  const [names, setNames] = useState([
+    { id: 1, text: '눈사람' },
+    { id: 2, text: '얼음' },
+    { id: 3, text: '눈' },
+    { id: 4, text: '바람' }
+  ]);
+  const [inputText, setInputText] = useState(“);
+  const [nextId, setNextId] = useState(5); // 새로운 항목을 추가할 때 사용할 id
+
+  const onChange = e => setInputText(e.target.value);
+  const onClick = () => {
+    const nextNames = names.concat({
+      id: nextId, // nextId 값을 id로 설정하고
+      text: inputText
+    });
+    setNextId(nextId + 1); // nextId 값에 1을 더해 준다.
+    setNames(nextNames); // names 값을 업데이트한다.
+    setInputText(''); // inputText를 비운다.
+  };
+  const onRemove = id => {
+    const nextNames = names.filter(name => name.id != = id);
+    setNames(nextNames);
+  };
+  const namesList = names.map(name => (
+    <li key={name.id} onDoubleClick={() => onRemove(name.id)}>
+      {name.text}
+    </li>
+  ));
+  return (
+    <>
+      <input value={inputText} onChange={onChange} />
+      <button onClick={onClick}>추가</button>
+      <ul>{namesList}</ul>
+    </>
+  );
+};
+
+
+
+export default IterationSample;
+```
+
+<br>
+
+---
+
+<br>
+
+## 6.5 정리
+
+<br>
+이 장에서는 반복되는 데이터를 렌더링하는 방법을 배우고, 이를 응용하여 유동적인 배열을 다루어 보았습니다. 컴포넌트 배열을 렌더링할 때는 key 값 설정에 항상 주의해야 합니다. 또 key 값은 언제나 유일해야 합니다. key 값이 중복된다면 렌더링 과정에서 오류가 발생합니다.
+<br><br>
+상태 안에서 배열을 변형할 때는 배열에 직접 접근하여 수정하는 것이 아니라 concat, filter 등의 배열 내장 함수를 사용하여 새로운 배열을 만든 후 이를 새로운 상태로 설정해 주어야 한다는 점을 명심하세요.
