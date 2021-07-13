@@ -2930,3 +2930,393 @@ constructor(props) {...}
 ### 7.2.3 getDerivedStateFromProps 메서드
 
 <br>
+이것은 리액트 v16.3 이후에 새로 만든 라이프사이클 메서드입니다. props로 받아 온 값을  state에 동기화시키는 용도로 사용하며, 컴포넌트가 마운트될 때와 업데이트될 떄 호출됩니다.
+<br><br>
+
+```js
+static getDerivedStateFromProps(nextProps, prevState) {
+  if(nextProps.value !== prevState.value) { //조건에 따라 특정 값 동기화
+    return { value: nextProps.value };
+  }
+  return null; //state를 변경할 필요가 없다면 null을 반환
+}
+```
+
+<br>
+
+### 7.2.4 componentDidMount 메서드
+
+<br>
+
+```js
+componentDidMount() {...}
+```
+
+<br>
+이것은 컴포넌트를 만들고, 첫 렌더링을 다 마친 후 실행합니다. 이 안에서 다른 자바스크립트 라이브러리 또는 프레임워크의 함수를 호출하거나 이벤트 등록, setTimeout, setInterval, 네트워크 요청 같은 비동기 작업을 처리하면 됩니다.
+<br><br>
+
+### 7.2.5 shouldComponentUpdate 메서드
+
+<br>
+
+```js
+shouldComponentUpdate(nextProps, nextState) {...}
+```
+
+<br>
+이것은 props 또는 state를 변경했을 때, 리렌더링을 시작할지 여부를 지정하는 메서드입니다. 이 메서드에서는 반드시 true 값 또는 false 값을 반환해야 합니다. 컴포넌트를 만들 때 이 메서드를 따로 생성하지 않으면 기본적으로 언제나 true 값을 반환합니다. 이 메서드가 false 값을 반환한다면 업데이트 과정은 여기서 중지됩니다.
+<br><br>
+이 메서드 안에서 현재 props와 state는 this.props와 this.state로 접근하고, 새로 설정될 props 또는 state는 nextProps와 nextState로 접근할 수 있습니다. <br><br>
+프로젝트 성능을 최적화 할 때, 상황에 맞는 알고리즘을 작성하여 리렌더링을 방지할 때는 false 값을 반환하게 합니다.
+<br><br>
+
+### 7.2.6 getSnapshotBeforeUpdate 메서드
+
+이것은 리액트 v16.3 이후 만든 메서드입니다. 이 메서드는 render에서 만들어진 결과물이 브라우저에 실제로 반영되기 직전에 호출됩니다. 이 메서드에서 반환하는 값은 componentDidUpdate에서 세 번째 파라미터인 snapshot 값으로 전달받을 수 있는데요. 주로 업데이트하기 직전의 값을 참고할 일이 있을 때 활용됩니다. (예: 스크롤바 위치 유지).
+<br><br>
+
+```js
+getSnapshotBeforeUpdate(prevProps, prevState) {
+  if(prevState.array !== this.state.array) {
+    const { scrollTop, scrollHeight } = this.list
+    return { scrollTop, scrollHeight };
+  }
+}
+```
+
+<br>
+
+### 7.2.7 componentDidUpdate 메서드
+
+<br>
+
+```js
+componentDidupdate(prevProps, prevState, snapshot) { ... }
+```
+
+이것은 리렌더링을 완료한 후 실행합니다. 업데이트가 끝난 직후이므로, DOM 관련 처리를 해도 무방합니다. 여기서는 prevProps 또는 prevState를 사용하여 컴포넌트가 이전에 가졌던 데이터에 접근할 수 있습니다. 또 getSnapshotBeforeUpdate에서 반환한 값이 있다면 여기서 snapshot 값을 전달받을 수 있습니다.
+<br><Br>
+
+### 7.2.8 componentWillUnmount 메서드
+
+<br>
+
+```js
+componentWillUnmount() {...}
+```
+
+<br>
+이것은 컴포넌트를 DOM에서 제거할 때 실행합니다. componentDidMount에서 등록한 이벤트, 타이머, 직접 생성한 DOM이 있다면 여기서 제거 작업을 해야 합니다.
+<br><br>
+
+### 7.2.9 componentDidCatch 메서드
+
+<br>
+componentDidCatch 메서드는 리액트 v16에서 새롭게 도입되었으며, 컴포넌트 렌더링 도중에 에러가 발생했을 때 애플리케이션이 먹통이 되지 않고 오류 UI를 보여 줄 수 있게 해 줍니다. 사용 방법은 다음과 같습니다. <br><br>
+
+```js
+componentDidCatch(error, info) {
+  this.setState({
+    error: true
+  });
+  console.log({ error, info });
+}
+```
+
+<br>
+여기서 error는 파라미터에 어떤 에러가 발생했는지 알려 주며, info 파라미터는 어디에 있는 코드에서 오류가 발생했는지에 대한 정보를 줍니다. 앞의 코드에서는 그저 console.log만 했지만, 나중에 실제로 사용할 때 오류가 발생하면 서버 API를 호출하여 따로 수집할 수도 있습니다. <br><br>
+그러나 이 메서드를 사용할 때는 컴포넌트 자신에게 발생하는 에러를 잡아낼 수 없고 자신의 this.props.children으로 전달되는 컴포넌트에서 발생하는 에러만 잡아낼 수 있다는 점을 알아두어야 합니다. 이 메서드를 사용하는 방법은 7.3.3절 '에러 잡아내기'에서 알아보겠습니다. <br><br>
+
+---
+
+<br>
+
+## 7.3 라이프사이클 메서드 사용하기
+
+<br>
+7.2절에서 살펴본 라이프사이클 메서드를 직접 사용해 봅시다. 이번 실습은 다음 흐름으로 진행합니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/125481933-a895ca12-6088-4e06-9b9b-019fb62d47e5.png)
+<br>
+
+### 7.3.1 예제 컴포넌트 생성
+
+<br>
+
+```js
+import React, { Component } from 'react';
+
+
+class LifeCycleSample extends Component {
+  state = {
+    number: 0,
+    color: null,
+  }
+
+
+
+  myRef = null; // ref를 설정할 부분
+
+
+
+constructor(props) {
+    super(props);
+    console.log('constructor');
+  }
+
+
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    console.log('getDerivedStateFromProps’);
+    if(nextProps.color != = prevState.color) {
+      return { color: nextProps.color };
+    }
+    return null;
+  }
+
+
+
+componentDidMount() {
+    console.log('componentDidMount');
+  }
+
+
+
+shouldComponentUpdate(nextProps, nextState) {
+    console.log('shouldComponentUpdate', nextProps, nextState);
+    // 숫자의 마지막 자리가 4면 리렌더링하지 않습니다.
+    return nextState.number % 10 != = 4;
+  }
+
+
+
+componentWillUnmount() {
+    console.log('componentWillUnmount');
+  }
+
+
+
+handleClick = () => {
+    this.setState({
+      number: this.state.number + 1
+    });
+  }
+
+
+
+getSnapshotBeforeUpdate(prevProps, prevState) {
+    console.log('getSnapshotBeforeUpdate');
+    if(prevProps.color != = this.props.color) {
+      return this.myRef.style.color;
+    }
+    return null;
+  }
+
+
+
+componentDidUpdate(prevProps, prevState, snapshot) {
+    console.log('componentDidUpdate', prevProps, prevState);
+    if(snapshot) {
+      console.log('업데이트되기 직전 색상: ', snapshot);
+    }
+  }
+
+
+
+render() {
+    console.log('render');
+
+
+
+    const style = {
+      color: this.props.color
+    };
+
+
+
+    return (
+      <div>
+        <h1 style={style} ref={ref => this.myRef=ref}>
+          {this.state.number}
+        </h1>
+        <p>color: {this.state.color}</p>
+        <button onClick={this.handleClick}>
+          더하기
+        </button>
+      </div>
+    )
+  }
+}
+
+
+
+export default LifeCycleSample;
+```
+
+<br>
+이 컴포넌트는 각 라이프사이클 메서드를 실행할 때마다 콘솔 디버거에 기록하고, 부모 컴포넌트에서 props로 색상을 받아 버튼을 누르면 state.number 값을 1씩 더합니다. <br><br>getDerivedStateFromProps는 부모에게서 받은 color 값을 state에 동기화하고 있습니다. 그리고 getSnapShotBeforeUpdate는 DOM에서 변화가 일어나기 직전의 색상 속성을 snapshot 값으로 반환하여 이것을 componentDidUpdate에서 조회할 수 있게 했습니다.<br><br>
+추가로 shouldComponentUpdate 메서드에서 state.number 값의 마지막 자리 수가 4이면(예: 4, 14, 24, 34) 리렌더링을 취소하도록 설정했습니다.
+<br><br>
+
+### 7.3.2 App 컴포넌트에서 예제 컴포넌트 사용
+
+<br>
+
+```js
+import React, { Component } from "react";
+import LifeCycleSample from "./LifeCycleSample";
+
+// 랜덤 색상을 생성합니다.
+function getRandomColor() {
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
+}
+
+class App extends Component {
+  state = {
+    color: "#000000",
+  };
+
+  handleClick = () => {
+    this.setState({
+      color: getRandomColor(),
+    });
+  };
+
+  render() {
+    return (
+      <div>
+        <button onClick={this.handleClick}>랜덤 색상</button>
+        <LifeCycleSample color={this.state.color} />
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+<br>
+getRandomColor 함수는 state의 color 값을 랜덤 색상으로 설정합니다. 16777215를 hex로 표현하면 ffffff가 되므로 해당 코드는 000000부터 ffffff 값을 반환합니다. <Br><br>
+버튼을 렌더링하고, 누를 때마다 handleClick 메서드가 호출되게 이벤트를 설정하며, 불러온 LifeCycleSample 컴포넌트에 color 값을 props로 설정합니다. <br><br>
+
+### 7.3.3 에러 잡아내기
+
+<br>
+방금 만든 LifeCycleSample 컴포넌트의 render 함수에서 의도적으로 에러를 한번 발생시켜 보겠습니다. render 함수에서의 에러는 주로 존재하지 않는 함수를 사용하려고 하거나, 존재하지 않는 객체의 값을 조회하려고 할 때 발생합니다. <br><Br>
+
+```js
+render() {
+    console.log('render');
+
+<span class="co46">const</span> <span class="co32">style</span> <span class="co35">=</span><span class="co33"> {</span>
+
+      color: this.props.color
+    };
+
+<span class="co46">return</span><span class="co33"> (</span>
+
+
+      <div>
+        {this.props.missing.value}
+        <h1 style={style} ref={ref => (this.myRef = ref)}>
+          {this.state.number}
+        </h1>
+        <p>color: {this.state.color}</p>
+        <button onClick={this.handleClick}>더하기</button>
+      </div>
+    );
+  }
+```
+
+<br>
+존재하지 않는 props인 missing 객체의 value를 조회해서 렌더링해 주려고 합니다. 이렇게 하면 당연히 브라우저에는 에러가 발생합니다. <br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/125483500-efdca704-c63b-41c7-8b44-518b2d5a02fa.png)
+
+<br>
+이렇게 어디에서 에러가 발생했는 지 알 수 있는 정보가 나타난 것은 우리가 현재 개발 서버를 실행 중이기 때문입니다. 해당 페이지의 오른쪽 상단에 있는 X 버튼을 누르면 오류 창이 닫힙니다. 닫히고 나면 아무것도 보이지 않고 흰 페이지만 남습니다. 만약 사용자가 웹 서비스를 실제로 사용할 때 이렇게 흰 화면만 나타나면 어리둥절할 것입니다. 이럴 때는 에러가 발생했다고 사용자에게 인지시켜 주어야 합니다.
+<br><br>
+지금부터는 에러를 잡아 주는 ErrorBoundary라는 컴포넌트를 생성해 보겠습니다.
+<br><br>
+
+```js
+import React, { Component } from "react";
+
+class ErrorBoundary extends Component {
+  state = {
+    error: false,
+  };
+  componentDidCatch(error, info) {
+    this.setState({
+      error: true,
+    });
+    console.log({ error, info });
+  }
+  render() {
+    if (this.state.error) return <div>에러가 발생했습니다!</div>;
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+```
+
+<br>
+에러가 발생하면 componentDidCatch 메서드가 호출되며, 이 메서드는 this.state.error 값을 true로 업데이트해 줍니다. 그리고 render 함수는 this.state.error 값이 true라면 에러가 발생했음을 알려 주는 문구를 보여 줍니다. 이제 이 컴포넌트를 사용해 App.js 에서 LifeCycleSample 컴포넌트를 감싸 주세요.
+<br><br>
+
+```js
+import React, { Component } from "react";
+import LifeCycleSample from "./LifeCycleSample";
+import ErrorBoundary from "./ErrorBoundary";
+
+// 랜덤 색상을 생성합니다.
+function getRandomColor() {
+  return "#" + Math.floor(Math.random() * 16777215).toString(16);
+}
+
+class App extends Component {
+  state = {
+    color: "#000000",
+  };
+
+  handleClick = () => {
+    this.setState({
+      color: getRandomColor(),
+    });
+  };
+
+  render() {
+    return (
+      <div>
+        <button onClick={this.handleClick}>랜덤 색상</button>
+        <ErrorBoundary>
+          <LifeCycleSample color={this.state.color} />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+<br>
+이렇게 코드를 작성하고 저장합니다. 여전히 조금 전처럼 붉은 에러 박스가 보이겠지만, X 버튼을 누르면 다음과 같이 '에러가 발생했습니다!'라는 문구가 보일 것입니다.
+<br><br>
+
+---
+
+<br>
+
+## 7.4 정리
+
+<br>
+컴포넌트의 라이프사이클 메서드 흐름을 한번 한눈에 확인해 볼까요?
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125484815-2f96a9a2-d9a6-48b1-96d0-40e9724a5655.png)
+<br><br>
+라이프사이클 메서드는 컴포넌트 상태에 변화가 있을 때마다 실행하는 메서드입니다. 이 메서드들은 서드파티 라이브러리를 사용하거나 DOM을 직접 건드려야 하는 상황에서 유용합니다. 추가로 컴포넌트 업데이트의 성능을 개선할 때는 shouldComponentUpdate가 중요하게 사용됩니다.
