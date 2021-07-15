@@ -3711,8 +3711,7 @@ export default RefSample;
 <br>
 여러 컴포넌트에서 비슷한 기능을 고유할 경우, 이를 여러분만의 Hook으로 작성하여 로직을 재사용할 수 있습니다. <br><br>
 
-> [자신만의 Hook 만들기](https://ko.reactjs.org/docs/hooks-custom.html) > [사용자 생성 커스텀 Hook](https://nikgraf.github.io/react-hooks/)
-> <br><br>
+> [자신만의 Hook 만들기](https://ko.reactjs.org/docs/hooks-custom.html) > [사용자 생성 커스텀 Hook](https://nikgraf.github.io/react-hooks/) > <br><br>
 
 ---
 
@@ -3724,3 +3723,388 @@ export default RefSample;
 리액트에서 Hooks 패턴을 사용하면 클래스형 컴포넌트를 작성하지 않고도 대부분의 기능을 구현할 수 있습니다. 이러한 기능이 리액트의 릴리즈되었다고 해서 기존의 setState를 사용하는 방식이 잘못된 것은 아닙니다. 물론 useState 혹은 useReducer을 통해 구현할 수 있더라도 말이죠.
 <br><br>
 리액트 매뉴얼에 따르면, 기존의 클래스형 컴포넌트는 앞으로도 계속해서 지원될 예정입니다. 그렇기 때문에 만약 유지 보수하고 있는 프로젝트에서 클래스형 컴포넌트를 사용하고 있다면, 이를 굳이 함수형 컴포넌트와 Hooks를 사용하는 형태로 전환할 필요는 없습니다. 다만, 매뉴얼에서는 새로 작성하는 컴포넌트의 경우 함수형 컴포넌트와 Hooks를 사용할 것을 권장하고 있습니다. 앞으로 여러분이 프로젝트를 개발할 때는 함수형 컴포넌트의 사용을 첫 번째 옵션으로 두고, 꼭 필요한 상황에서만 클래스형 컴포넌트를 구현하세요.
+<br><br>
+
+---
+
+<br>
+
+# 9장. 컴포넌트 스타일링
+
+<br>
+리액트에서 컴포넌트를 스타일링 할 때는 다양한 방식을 사용할 수 있습니다. 여러 방식 중에서 딱히 정해진 방식이란 없습니다. 회사마다 요구하는 스펙이 다르고, 개발자마다 각자 취향에 따라 선택하기 때문입니다. 이 장에서는 어떠한 방식이 있는지 알아보고, 자주 사용하는 방식을 하나하나 사용해 보겠습니다. 
+<br><br>
+이 장에서 알아볼 스타일링 방식은 다음과 같습니다.
+<br><br>
+
+- 일반 CSS : 컴포넌트를 스타일링하는 가장 기본적인 방식입니다.
+- Sass : 자주 사용되는 CSS 전처리기(pre-processor) 중 하나로 확장된 CSS 문법을 사용하여 CSS 코드를 더욱 쉽게 작성할 수 있도록 해 줍니다.
+- CSS Module : 스타일을 작성할 때 CSS 클래스가 다른 CSS 클래스의 이름과 절대 충돌하지 않도록 파일마다 고유한 이름을 자동으로 생성해 주는 옵션입니다.
+- Styled-components : 스타일을 자바스크립트 파일에 내장시키는 방식으로 스타일을 작성함과 동시에 해당 스타일이 적용된 컴포넌트를 만들 수 있게 해줍니다.
+
+<br><br>
+
+---
+
+<br>
+
+## 9.1 가장 흔한 방식, 일반 CSS
+
+<br>
+프로젝트는 일반 CSS 방식으로 만들어져 있습니다. 기존의 CSS 스타일링이 딱히 불편하지 않고 새로운 기술을 배울 필요가 없다고 생각되면, 일반 CSS를 계속 사용해도 상관없습니다.
+<br><br>
+실제로도 소규모 프로젝트를 개발하고 있다면 새로운 스타일링 시스템을 적용하는 것이 불필요할 수도 있습니다. 그런 상황에는 프로젝트에 이미 적용되어 있는 기본 CSS 시스템을 사용하는 것 만으로도 충분합니다. 
+<br><br>
+방금 만든 프로젝트를 보면 src 디렉터리에 App.js 파일과 App.css 파일이 있습니다.
+<br><br>
+
+```js
+import React, { Component } from "react";
+import logo from "./logo.svg";
+import "./App.css";
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <p>
+            Edit <code>src/App.js</code> and save to reload.
+          </p>
+          <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn React
+          </a>
+        </header>
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+<br>
+
+```css
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 40vmin;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+```
+
+<br>
+CSS를 작성할 때 가장 중요한 점은 CSS 클래스를 중복되지 않게 만드는 것입니다. CSS 클래스가 중복되는 것을 방지하는 여러 가지 방식이 있는데, 그중 하나는 이름을 지을 때 특별한 규칙을 사용하여 짓는 것이고, 또 다른 하나는 CSS Selector를 활용하는 것입니다.
+<br><br>
+
+### 9.1.1 이름 짓는 규칙
+
+<br>
+프로젝트에 자동 생성된 App.css를 읽어 보면 클래스 이름이 컴포넌트 이름-클래스 형태로 지어져 있습니다(예: App-header). 클래스 이름에 컴포넌트 이름을 포함시킴으로써 다른 컴포넌트에서 실수로 중복되는 클래스를 만들어 사용하는 것을 방지할 수 있죠. 비슷한 방식으로 BEM 네이밍(BEM Naming)이라는 방식도 있습니다. BEM 네이밍은 CSS 방법론 중 하나로, 이름을 지을 때 일종의 규칙을 준수하여 해당 클래스가 어디에서 어떤 용도로 사용되는지 명확하게 작성하는 방식입니다. 예를 들어 .card__title-primary처럼 말이죠.
+<br><br>
+
+### 9.1.2 CSS Selector
+
+<br>
+CSS Selector를 사용하면 CSS 클래스가 특정 클래스 내부에 있는 경우에만 스타일을 적용할 수 있습니다. 예를 들어 .App안에 들어 있는 .logo에 스타일을 적용하고 싶다면 다음과 같이 작성하면 됩니다.
+<br><br>
+
+```css
+.App .logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 40vmin;
+}
+```
+
+<br>
+이런 식으로 컴포넌트의 최상위 html 요소에는 컴포넌트의 이름으로 클래스 이름을 짓고(.App), 그 내부에는 소문자를 입력하거나(.logo), header 같은 태그를 사용하여 클래스 이름이 불필요한 경우에는 아예 생략할 수도 있습니다.
+<br><br>
+
+---
+
+<br>
+
+## 9.2 Sass 사용하기
+
+<br>
+Sass(Syntatically Awesome Stlye Sheets)(문법적으로 매우 멋진 스타일 시트)는 CSS 전처리기로 복잡한 작업을 쉽게 할 수 있도록 해 주고, 스타일 코드의 재활용성을 높여 줄 뿐만 아니라 코드의 가독성을 높여서 유지 보수를 더욱 쉽게 해 줍니다.
+<br><br>
+Sass에서는 두 가지 확장자 .scss와 .sass를 지원합니다. Sass가 처음 나왔을 때는 .sass 확장자만 지원되었으나 나중에 개발자들의 요청에 의해 .scss 확장자도 지원하게 되었습니다.
+<br><br>
+.scss의 문법과 .sass의 문법은 꽤 다릅니다. 다음 코드를 한번 확인해 보세요.
+<br><br>
+
+```css
+/*.sass 문법 */
+$font-stack: Helvetica, sans-serif
+$primary-color: #333
+
+body
+  font: 100% $font-stack
+  color: $primary-color
+```
+
+<br>
+
+```css
+/*.scss 문법*/
+$font-stack: Helvetica, sans-serif;
+$primary-color: #333;
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+}
+```
+
+<br>
+
+주요 차이점을 살펴보면, .sass 확장자는 중괄호({})와 세미콜론(;)을 사용하지 않습니다. 반면 .scss 확장자는 기존 CSS를 작성하는 방식과 비교해서 문법이 크게 다르지 않습니다. 보통 .scss 문법이 더 자주 사용되므로 이 책에서는 .scss 확장자를 사용하여 스타일을 작성해 보겠습니다.
+<br><br>
+
+```css
+/* SassComponent.scss */
+// 변수 사용하기
+$red: #fa5252;
+$orange: #fd7e14;
+$yellow: #fcc419;
+$green: #40c057;
+$blue: #339af0;
+$indigo: #5c7cfa;
+$violet: #7950f2;
+// 믹스인 만들기(재사용되는 스타일 블록을 함수처럼 사용할 수 있음)
+@mixin square($size) {
+  $calculated: 32px * $size;
+  width: $calculated;
+  height: $calculated;
+}
+
+.SassComponent {
+  display: flex;
+  .box {
+    // 일반 CSS에서는 .SassComponent .box와 마찬가지
+    background: red;
+    cursor: pointer;
+    transition: all 0.3s ease-in;
+    &.red {
+      // .red 클래스가 .box와 함께 사용되었을 때
+      background: $red;
+      @include square(1);
+    }
+    &.orange {
+      background: $orange;
+      @include square(2);
+    }
+    &.yellow {
+      background: $yellow;
+      @include square(3);
+    }
+    &.green {
+      background: $green;
+      @include square(4);
+    }
+    &.blue {
+      background: $blue;
+      @include square(5);
+    }
+    &.indigo {
+      background: $indigo;
+      @include square(6);
+    }
+    &.violet {
+      background: $violet;
+      @include square(7);
+    }
+    &:hover {
+      // .box에 마우스를 올렸을 때
+      background: black;
+    }
+  }
+}
+```
+
+<br>
+
+```js
+{
+  /* SassComponent.js*/
+}
+import React from "react";
+import "./SassComponent.scss";
+
+const SassComponent = () => {
+  return (
+    <div className="SassComponent">
+      <div className="box red" />
+      <div className="box orange" />
+      <div className="box yellow" />
+      <div className="box green" />
+      <div className="box blue" />
+      <div className="box indigo" />
+      <div className="box violet" />
+    </div>
+  );
+};
+export default SassComponent;
+```
+
+<br><br>
+
+```js
+{
+  /* App.js */
+}
+import React, { Component } from "react";
+import SassComponent from "./SassComponent";
+
+class App extends Component {
+  render() {
+    return (
+      <div>
+        <SassComponent />
+      </div>
+    );
+  }
+}
+
+export default App;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125824822-6acff0e4-5f6c-4b55-be8e-ad6c334b2a94.png)
+<br><Br>
+
+### 9.2.1 utils 함수 분리하기
+
+<br>
+여러 파일에서 사용될 수 있는 Sass 변수 및 믹스인은 다른 파일로 따로 분리하여 작성한 뒤 필요한 곳에서 쉽게 불러와 사용할 수 있습니다.
+<br><br>
+
+```css
+/* src/styles/utils.scss */
+// 변수 사용하기
+$red: #fa5252;
+$orange: #fd7e14;
+$yellow: #fcc419;
+$green: #40c057;
+$blue: #339af0;
+$indigo: #5c7cfa;
+$violet: #7950f2;
+
+// 믹스인 만들기(재사용되는 스타일 블록을 함수처럼 사용할 수 있음)
+@mixin square($size) {
+  $calculated: 32px * $size;
+  width: $calculated;
+  height: $calculated;
+}
+```
+
+<br>
+
+```css
+@import './styles/utils';
+.SassComponent {
+  display: flex;
+  .box {
+    background: red; // 일반 CSS에서는 .SassComponent .box와 마찬가지
+    cursor: pointer;
+    transition: all 0.3s ease-in;
+    (...)
+  }
+}
+```
+
+<br><br>
+
+### 9.2.3 node_modules에서 라이브러리 불러오기
+
+<br>
+Sass의 장점 중 하나는 라이브러리를 쉽게 불러와서 사용할 수 있다는 점입니다. yarn을 통해 설치한 라이브러리를 사용하는 가장 기본적인 방법은 무엇일까요? 다음과 같이 상대 경로를 사용하여 node_modules까지 들어가서 불러오는 방법입니다.
+<br><br>
+
+```
+@import '../../../node_modules/library/styles';
+```
+
+<br>
+하지만 이런 구조는 스타일 파일이 깊숙한 디렉터리에 위치할 경우 ../를 매우 많이 적어야 하니 번거롭겠죠? 이보다 더 쉬운 방법이 있는데, 바로 물결 문자(~)를 사용하는 방법입니다.
+<br><br>
+
+```
+@import '~library/styles';
+```
+
+<br>
+물결 문자를 사용하면 자동으로 node_modules에서 라이브러리 디렉터리를 탐지하여 스타일을 불러올 수 있습니다. <br><br>
+연습 삼아 유용한 Sass 라이브러리 두 가지를 설치하고 사용해 보겠습니다. 반응형 디자인을 쉽게 만들어 주는 include-media(https://include-media.com/)와 매우 편리한 색상 팔레트인 open-color(https://www.npmjs.com/package/open-color)를 yarn 명령어를 사용해 설치해 보세요.
+<br><Br>
+
+```
+$ yarn add open-color include-media
+```
+
+<br>
+그 다음에는 utils.scss 파일을 열고 물결 표시를 사용하여 라이브러리를 불러오세요. 다음 두 줄을 코드 상단에 넣어 주면 됩니다.
+<br><br>
+
+```css
+@import '~include-media/dist/include-media';
+@import '~open-color/open-color';
+(...)
+```
+
+<br>
+Sass 라이브러리를 불러올 때는 node_modules 내부 라이브러리 경로 안에 들어 있는 scss 파일을 불러와야 합니다. 보통 scss 파일 경로가 어디에 위치하고 있는지를 라이브러리의 공식 매뉴얼에서 알려 주지 않을 때가 많으니, 직접 경로로 들어가서 확인하길 바랍니다.<br><br>
+이제 방금 불러온 include-media와 open-color를 SassComponent.scss에서 사용해 보겠습니다. 해당 스타일 파일을 다음과 같이 수정해 보세요.
+<br><br>
+
+```scss
+.SassComponent {
+  display: flex;
+  background: $oc-gray-2;
+  @include media('<768px') {
+    background: $oc-gray-9;
+  }
+  (…)
+}
+```
+
+<br>
+이 코드는 SassComponent의 배경색을 open-colors 팔레트 라이브러리에서 불러온 후 설정하고, 화면 가로 크기가 768px 미만이 되면 배경색을 어둡게 바꿔 줍니다. 코드를 저장하고 나면 다음과 같은 결과물이 나타납니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/125826246-1b956cd4-462c-45f0-ad3a-9d708c104858.png)
