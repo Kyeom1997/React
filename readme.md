@@ -4108,3 +4108,480 @@ Sass 라이브러리를 불러올 때는 node_modules 내부 라이브러리 경
 <br><br>
 
 ![image](https://user-images.githubusercontent.com/78855917/125826246-1b956cd4-462c-45f0-ad3a-9d708c104858.png)
+
+<br><br>
+
+---
+
+<br>
+
+## 9.3 CSS Module
+
+<br>
+CSS Module은 CSS를 불러와서 사용할 때 클래스 이름을 고유한 값, 즉 <b>[파일 이름]_[클래스 이름]_[해시값]</b> 형태로 자동으로 만들어서 컴포넌트 스타일 클래스 이름이 중첩되는 현상을 방지해 주는 기술입니다. 
+<br><br>
+
+```css
+/* CSSModule.module.css */
+/* 자동으로 고유해질 것이므로 흔히 사용되는 단어를 클래스 이름으로 마음대로 사용 가능 */
+
+.wrapper {
+  background: black;
+  padding: 1rem;
+  color: white;
+  font-size: 2rem;
+}
+
+/* 글로벌 CSS를 작성하고 싶다면 */
+:global .somthing {
+  font-weight: 800;
+  color: aqua;
+}
+```
+
+<br>
+CSS Module을 사용하면 클래스 이름을 지을 때 그 고유성에 대해 고민하지 않아도 됩니다. 흔히 사용하는 단어로 이름을 짓는다고 해도 전혀 문제가 되지 않습니다. 해당 클래스는 우리가 방금 만든 스타일을 직접 불러온 컴포넌트 내부에서만 작동하기 때문입니다. 만약 특정 클래스가 웹 페이지에서 전역적으로 사용되는 경우라면 :global을 앞에 입력하여 글로벌 CSS임을 명시해 줄 수 있습니다. <br><br>
+다 작성했다면 위 CSS Module을 사용하는 리액트 컴포넌트도 작성해 봅시다!
+<br><br>
+
+```js
+//CSSModule.js
+
+import React from "react";
+import styles from "./CSSModule.module.css";
+const CSSModule = () => {
+  return (
+    <div className={styles.wrapper}>
+      안녕하세요, 저는 <span className="something">CSS Module!</span>
+    </div>
+  );
+};
+
+export default CSSModule;
+```
+
+<br>
+CSS Module이 적용된 스타일 파일을 불러오면 객체를 하나 전달받게 되는데 CSS Module에서 사용한 클래스 이름과 해당 이름을 고유화한 값이 키-값 형태로 들어 있습니다. 예를 들어 위 코드에서 console.log(styles)를 한다면 다음과 같은 결과가 나타납니다.
+<br><br>
+
+```js
+{
+  wrapper: "CSSModule_wrapper__1SbdQ";
+}
+```
+
+<br>
+우리가 지정한 클래스 이름 앞뒤로 파일 이름과 해시값이 붙었지요?
+<br><br>
+이 고유한 클래스 이름을 사용하려면 클래스를 적용하고 싶은 JSX 엘리먼트에 className={styles.[클래스이름]} 형태로 전달해 주면 됩니다. :global을 사용하여 전역적으로 선언한 클래스의 경우 평상시 해 왔던 것처럼 그냥 문자열로 넣어 줍니다.
+<br><br>
+CSS Module을 사용한 클래스 이름을 두 개 이상 적용할 때는 다음과 같이 코드를 작성하면 됩니다.
+<br><br>
+
+```css
+/* 자동으로 고유해질 것이므로 흔히 사용되는 단어를 클래스 이름으로 마음대로 사용 가능 */
+
+.wrapper {
+  background: black;
+  padding: 1rem;
+  color: white;
+  font-size: 2rem;
+}
+
+.inverted {
+  color: black;
+  background: white;
+  border: 1px solid black;
+}
+
+/* 글로벌 CSS를 작성하고 싶다면 */
+
+:global .something {
+  font-weight: 800;
+  color: aqua;
+}
+```
+
+<br>
+
+```js
+import React from "react";
+import styles from "./CSSModule.module.css";
+
+const CSSModule = () => {
+  return (
+    <div className={`${styles.wrapper} ${styles.inverted}`}>
+      안녕하세요, 저는 <span className="something">CSS Module!</span>
+    </div>
+  );
+};
+
+export default CSSModule;
+```
+
+<br>
+위 코드에서는 ES6 문법 템플릿 리터럴(Template Literal)을 사용하여 문자열을 합해 주었습니다. 이 문법을 사용하면 문자열 안에 자바스크립트 레퍼런스를 쉽게 넣어 줄 수 있습니다. 
+<br><br>
+
+```js
+const name = "리액트";
+// const message = '제 이름은 ' + name + '입니다.'
+const message = `제 이름은 ${name}입니다.`;
+```
+
+<br>
+여기서 사용되는 ` 문자는 백틱(Backtick)이라고 부르며, 키보드에서 숫자 키 1 왼쪽에 있는 키 `입니다. 
+<br><br>
+
+### 9.3.1 classnames
+
+<br>
+classnames는 CSS 클래스를 조건부로 설정할 때 매우 유용한 라이브러리입니다. 또한, CSS Module을 사용할 때 이 라이브러리를 사용하면 여러 클래스를 적용할 때 매우 편리합니다. 우선 해당 라이브러리를 설치하세요.
+<br><br>
+
+```
+$ yarn add classnames
+```
+
+<br>
+
+```js
+import classNames from "classnames";
+
+classNames("one", "two"); // = 'one two'
+classNames("one", { two: true }); // = 'one two'
+classNames("one", { two: false }); // = 'one'
+classNames("one", ["two", "three"]); // = 'one two three'
+
+const myClass = "hello";
+classNames("one", myClass, { myCondition: true }); // = 'one hello myCondition'
+```
+
+<br>
+이런식으로 여러 가지 종류의 파라미터를 조합해 CSS 클래스를 설정할 수 있기 때문에 컴포넌트에서 조건부로 클래스를 설정할 때 매우 편합니다. 예를 들어 props 값에 따라 다른 스타일을 주기가 쉬워지죠.
+<br><br>
+
+```js
+const MyComponent = ({ highlighted, theme }) => (
+  <div className={classNames("MyComponent", { hightlighted }, theme)}>
+    Hello
+  </div>
+);
+```
+
+<br>
+이렇게 할 경우, 위 엘리먼트의 클래스에 highlighted 값이 true이면 highlighted 클래스가 적용되고, false이면 적용되지 않습니다. 추가로 theme으로 전달받는 문자열은 내용 그대로 클래스에 적용됩니다. 
+<br><br>
+덧붙여 CSS Module과 함께 사용하면 CSS Module 사용이 훨씬 쉬워집니다. classnames에 내장되어 있는 bind 함수를 사용하면 클래스를 넣어 줄 때마다 styles.[클래스 이름]형태를 사용할 필요가 없습니다. 사전에 미리 styles에서 받아 온 후 사용하게끔 설정해 두고 cx('클래스 이름', '클래스 이름 2') 형태로 사용할 수 있습니다.
+<br><br>
+
+```js
+import React from "react";
+import classNames from "classnames/bind";
+import styles from "./CSSModule.module.css";
+
+const cx = classNames.bind(styles); // 미리 styles에서 클래스를 받아 오도록 설정하고
+
+const CSSModule = () => {
+  return (
+    <div className={cx("wrapper", "inverted")}>
+      안녕하세요, 저는 <span className="something">CSS Module!</span>
+    </div>
+  );
+};
+
+export default CSSModule;
+```
+
+<br><br>
+
+---
+
+<br>
+
+## 9.4 styled-components
+
+<br>
+컴포넌트 스타일링의 또 다른 패러다임은 자바스크립트 파일 안에 스타일을 선언하는 방식입니다. 이 방식을 'CSS-in-JS'라고 부르는데요. 이와 관련된 라이브러리는 정말 많습니다. 라이브러리의 종류는 https://github.com/MicheleBertoli/css-in-js 에서 확인할 수 있습니다. 이 절에서는 CSS-in-JS 라이브러리 중에서 개발자들이 가장 선호하는  styled-components를 알아보겠습니다.
+<br><br>
+
+```
+$ yarn add styled-components
+```
+
+<br>
+styled-components를 사용하면 자바스크립트 파일 하나에 스타일까지 작성할 수 있기 때문에 .css 또는 .scss 확장자를 가진 스타일 파일을 따로 만들지 않아도 된다는 큰 이점이 있습니다.
+<br><br>
+
+```js
+import React from "react";
+import stlyed, { css } from "styled-components";
+
+const Box = styled.div`
+  /* props로 넣어 준 값을 직접 전달해 줄 수 있습니다. */
+  background: ${(props) => props.color || "blue"};
+  padding: 1rem;
+  display: flex;
+`;
+
+const Button = styled.button`
+  background: white;
+  color: black;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 1rem;
+  font-weight: 600;
+
+  /* & 문자를 사용하여 Sass처럼 자기 자신 선택 가능 */
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  /* 다음 코드는 inverted 값이 true일 때 특정 스타일을 부여해 줍니다. */
+  ${(props) =>
+    props.inverted &&
+    css`
+      background: none;
+      border: 2px solid white;
+      color: white;
+      &:hover {
+        background: white;
+        color: black;
+      }
+    `};
+  & + button {
+    margin-left: 1rem;
+  }
+`;
+
+const StyledComponent = () => (
+  <Box color="black">
+    <Button>안녕하세요</Button>
+    <Button inverted={true}>테두리만</Button>
+  </Box>
+);
+
+export default StyledComponent;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125978205-9dacc121-8683-41d4-afa2-5e916bd091e2.png)
+<br><br>
+
+styled-components와 일반 classNames를 사용하는 CSS/Sass를 비교했을 때, 가장 큰 장점은 props 값으로 전달해 주는 값을 쉽게 스타일에 적용할 수 있다는 것입니다.
+<br><br>
+
+### 9.4.1 Tagged 템플릿 리터럴
+
+<br>
+앞에서 작성한 코드를 확인해 보면, 스타일을 작성할 때 `을 사용하여 만든 문자열에 스타일 정보를 넣어 주었습니다. 여기서 사용한 문법을 Tagged 템플릿 리터럴이라고 부릅니다. CSS Module을 배울 때 나온 일반 템플릿 리터럴과 다른 점은 템플릿 안에 자바스크립트 객체나 함수를 전달할 때 온전히 추출할 수 있다는 것입니다.
+<br><br>
+
+```js
+`hello ${{ foo: "bar" }} ${() => "world"}!`;
+// 결과: "hello [object Object] () => 'world'! "
+```
+
+<br>
+템플릿에 객체를 넣거나 함수를 넣으면 형태를 잃어 버리게 됩니다. 객체는 "[object Object]"로 변환되고, 함수는 함수 내용이 그대로 문자열화되어 나타나죠. 만약 다음과 같은 함수를 작성하고 나서 해당 함수 뒤에 템플릿 리터럴을 넣어 준다면, 템플릿 안에 넣은 값을 온전히 추출할 수 있습니다.
+<Br><br>
+
+```js
+function tagged(...args) {
+  console.log(args);
+}
+tagged`hello ${{ foo: "bar" }} ${() => "world"}!`;
+```
+
+<br>
+
+![image](https://user-images.githubusercontent.com/78855917/125979014-5ea621bf-5c5e-47e9-9d36-5448eda6a0d9.png)
+<br><br>
+Tagged 템플릿 리터럴을 사용하면 이렇게 템플릿 사이사이에 들어가는 자바스크립트 객체나 함수의 원본 값을 그대로 추출할 수 있습니다. styled-components는 이러한 속성을 사용하여 styled-components로 만든 컴포넌트의 props를 스타일 쪽에서 쉽게 조회할 수 있도록 해 줍니다.
+<br><br>
+
+### 9.4.2 스타일링된 엘리먼트 만들기
+
+<br>
+styled-components를 사용하여 스타일링된 엘리먼트를 만들 때는 컴포넌트 파일의 상단에서 styled를 불러오고 styled.태그명을 사용하여 구현합니다.
+<br><Br>
+
+```js
+import styled from "styled-components";
+
+const MyComponent = styled.div`
+  font-size: 2rem;
+`;
+```
+
+<br>
+이렇게 styled.div 뒤에 Tagged 템플릿 리터럴 문법을 통해 스타일을 넣어 주면, 해당 스타일이 적용된 div로 이루어진 리액트 컴포넌트가 생성됩니다. 그래서 나중에 
+<br><br>
+
+```js
+<MyComponent>Hello</MyComponent>
+```
+
+<br>
+와 같은 형태로 사용할 수 있습니다. div가 아닌 button이나 input에 스타일리을 하고 싶다면 styled.button 혹은 styled.input 같은 형태로 뒤에 태그명을 넣어 주면 됩니다. 하지만 사용해야 할 태그명이 유동적이거나 특정 컴포넌트 자체에 스타일링해 주고 싶다면 다음과 같은 형태로 구현할 수 있습니다.
+<br><br>
+
+```js
+//태그의 타입을 styled 함수의 인자로 전달
+const MyInput = styled("input")`
+  background: gray;
+`;
+
+// 아예 컴포넌트 형식의 값을 넣어 줌
+const StyledLink = styled(Link)`
+  color: blue;
+`;
+```
+
+<br><br>
+
+### 9.4.3 스타일에서 props 조회하기
+
+<br>
+stlyed-components를 사용하면 스타일 쪽에서 컴포넌트에게 전달된 props 값을 참조할 수 있습니다. 이전에 작성했던 Box 컴포넌트를 다시 볼까요?
+<br><br>
+
+```js
+const Box = styled.div`
+  /* props로 넣어 준 값을 직접 전달해 줄 수 있습니다. */
+  background: ${(props) => props.color || "blue"};
+  padding: 1rem;
+  display: flex;
+`;
+```
+
+<br>
+이 코드를 보면 background 값에 props를 조회해서 props.color의 값을 사용하게 했습니다. 그리고 color 값이 주어지지 않았을 때는 blue를 기본 색상으로 설정했습니다. 이렇게 만들어진 코드는 JSX에서 사용될 때 다음과 같이 color 값을 props로 넣어 줄 수 있습니다.
+<br><br>
+
+```js
+<Box color="black">(...)</Box>
+```
+
+<br>
+
+### 9.4.4 props에 따른 조건부 스타일링
+
+<br>
+일반 CSS 클래스를 사용하여 조건부 스타일링을 해야 할 때는 className을 사용하여 조건부 스타일링을 해 왔는데요. styled-components에서는 조건부 스타일링을 간단하게 props로도 처리할 수 있습니다. <br><br>
+
+```js
+import styled, { css } from "styled-components";
+/* 단순 변수의 형태가 아니라 여러 줄의 스타일 구문을 조건부로 설정해야 하는 경우에는 css를 불러와야 합니다. */
+const Button = styled.button`
+  background: white;
+  color: black;
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 1rem;
+  font-weight: 600;
+
+  /* & 문자를 사용하여 Sass처럼 자기 자신 선택 가능 */
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  /* 다음 코드는 inverted 값이 true일 때 특정 스타일을 부여해 줍니다. */
+  ${(props) =>
+    props.inverted &&
+    css`
+      background: none;
+      border: 2px solid white;
+      color: white;
+      &:hover {
+        background: white;
+        color: black;
+      }
+    `};
+  & + button {
+    margin-left: 1rem;
+  }
+`;
+```
+
+<br>
+이렇게 만든 컴포넌트는 다음과 같이 props를 사용하여 서로 다른 스타일을 적용할 수 있습니다.
+<br><br>
+
+```js
+<Button>안녕하세요</Button>
+<Button inverted={true}>테두리만</Button>
+```
+
+<br>
+스타일 코드 여러 줄을 props에 따라 넣어 주어야 할 때는 CSS를 styled-components에서 불러와야 합니다. 만약 조건부 스타일링을 할 때 넣는 여러 줄의 코드에서 props를 참조하지 않는다면 굳이 CSS를 불러와서 사용하지 않아도 상관없습니다. 하지만 props를 참조한다면, 반드시 CSS로 감싸 주어서 Tagged 템플릿 리터럴을 사용해 주어야 합니다.
+<br><br>
+
+### 9.4.5 반응형 디자인
+
+<br>
+이번에는 styled-components를 사용할 때 반응형 디자인을 어떻게 하는지 한번 알아봅시다. 브라우저의 가로 크기에 따라 다른 스타일을 적용하기 위해서는 일반 CSS를 사용할 때와 똑같이 media 쿼리(query)를 사용하면 됩니다. 
+<br><Br>
+
+```js
+const Box = styled.div`
+  background: ${(props) => props.color || "blue"};
+  padding: 1rem;
+  display: flex;
+  /* 기본적으로는 가로 크기 1024px에 가운데 정렬을 하고 가로 크기가 작아짐에 따라 크기를 줄이고 768px 미만이 되면 꽉 채웁니다 */
+
+  width: 1024px;
+  margin: 0 auto;
+  @media (max-width: 1024px) {
+    width: 768px;
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+```
+
+<br>
+일반 CSS에서 할 때랑 큰 차이가 없습니다. 그런데 이러한 작업을 여러 컴포넌트에서 반복해야 한다면 조금 귀찮을 수도 있습니다. 그럴 떄는 이 작업을 함수화여 간편하게 사용할 수 있습니다. styled-components 매뉴얼에서 제공하는 유틸 함수를 따라 사용해 봅시다.
+<br><br>
+
+```js
+import React from 'react';
+import styled, { css } from 'stlyed-components'
+
+const sizes = {
+  desktop: 1024,
+  tablet: 768
+};
+
+// 위에 있는 size 객체에 따라 자동으로 media 쿼리 함수를 만들어 줍니다.
+// 참고: https://www.styled-components.com/docs/advanced#media-templates
+const media = Object.keys(sizes).reduce((acc, label)) => {
+  acc[label] = (...args) => css`
+  @media (max-width: ${sizes[label] / 16}em) {
+    ${css(...args)};
+    }
+  `;
+
+  return acc;
+}, {});
+
+const Box = styled.div`
+  background: ${props => props.color || 'blue'};
+  padding: 1rem;
+  display: flex;
+  width: 1024px;
+  margin: 0 auto;
+  ${media.desktop`width: 768px;`}
+  ${media.tablet`width: 100%`};
+`;
+```
