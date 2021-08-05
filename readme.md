@@ -5203,7 +5203,7 @@ export default Profiles;
 # 14장. 외부 API를 연동하여 뉴스 뷰어 만들기
 
 <br>
-지금까지 배운 것을 활용하여 카테고리별로 최신 뉴스 목록을 보여 주는 뉴스 뷰어 프로젝트를 진행해 보겠습니다. https://newsapi.org/ 에서 제공하는 API를 사용하여 데이터를 받아 오고, 9장에서 배운 styled-component를 활용하여 프로젝트를 스타일링해 볼 것입니다.
+지금까지 배운 것을 활용하여 카테고리별로 최신 뉴스 목록을 보여 주는 뉴스 뷰어 프로젝트를 진행해 보겠습니다. https://newsAPI.org/ 에서 제공하는 API를 사용하여 데이터를 받아 오고, 9장에서 배운 styled-component를 활용하여 프로젝트를 스타일링해 볼 것입니다.
 <br><br>
 
 ---
@@ -5221,7 +5221,7 @@ export default Profiles;
 
 만약 작업을 동기적으로 처리한다면 요청이 끝날 때까지 기다리는 동안 중지 상태가 되기 때문에 다른 작업을 할 수 없습니다. 그리고 요청이 끝나야 비로소 그다음 예정된 작업을 할 수 있죠. 하지만 이를 비동기적으로 처리한다면 웹 애플리케이션이 멈추지 않기 때문에 동시에 여러 가지 요청을 처리할 수도 있고, 기다리는 과정에서 다른 함수도 호출할 수 있습니다.
 <br><br>
-이렇게 서버 APi를 호출할 때 외에도 작업을 비동기적으로 처리할 때가 있는데, 바로 setTimeout 함수를 사용하여 특정 작업을 예약할 때입니다. 예를 들어 다음 코드는 3초 후에 printMe 함수를 호출합니다.
+이렇게 서버 API를 호출할 때 외에도 작업을 비동기적으로 처리할 때가 있는데, 바로 setTimeout 함수를 사용하여 특정 작업을 예약할 때입니다. 예를 들어 다음 코드는 3초 후에 printMe 함수를 호출합니다.
 <br><br>
 
 ```js
@@ -5232,7 +5232,491 @@ function printMe() {
 setTimeout(printMe, 3000);
 console.log("대기 중...");
 ```
+
 <br>
 
 setTimeout이 사용되는 시점에서 코드가 3초 동안 멈추는 것이 아니라, 일단 코드가 위부터 아래까지 다 호출되고 3초 뒤에 우리가 지정해 준 printMe가 호출되고 있죠. <br><br>
 자바스크립트에서 비동기 작업을 할 때 가장 흔히 사용하는 방법은 콜백 함수를 사용하는 것입니다. 위 코드에서는 printMe가 3초 뒤에 호출되도록 printMe 함수 자체를 setTimeout 함수의 인자로 전달해 주었는데, 이런 함수를 콜백 함수라고 부릅니다.
+<br><br>
+
+### 14.1.1 콜백 함수
+
+<br>
+자, 이번에는 다른 코드를 확인해 보겠습니다. 예를 들어 파라미터 값이 주어지면 1초 뒤에 10을 더해서 반환하는 함수가 있다고 가정해 보죠. 그리고 해당 함수가 처리된 직후 어떠한 작업을 하고 싶다면 다음과 같이 콜백 함수를 활용해서 작업합니다.
+<br><br>
+
+```js
+function increase(number, callback) {
+  setTimeout(() => {
+    const result = number + 10;
+    if (callback) {
+      callback(result);
+    }
+  }, 1000);
+}
+
+increase(0, (result) => {
+  console.log(result);
+});
+```
+
+<br>
+1초에 걸쳐서 10, 20, 30, 40과 같은 형태로 여러 번 순차적으로 처리하고 싶다면 콜백 함수를 중첩하여 구현할 수 있습니다.
+<br><br>
+
+```js
+function increase(number, callback) {
+  setTimeout(() => {
+    const result = number + 10;
+    if (callback) {
+      callback(result);
+    }
+  }, 1000);
+}
+
+console.log("작업 시작");
+increase(0, (result) => {
+  console.log(result);
+  increase(result, (result) => {
+    console.log(result);
+    increase(result, (result) => {
+      console.log(result);
+      increase(result, (result) => {
+        console.log(result);
+        console.log("작업 완료");
+      });
+    });
+  });
+});
+```
+
+<br>
+이렇게 콜백 안에 또 콜백을 넣어서 구현할 수 있는데, 너무 여러 번 중첩되니까 코드의 가독성이 나빠졌지요? 이러한 형태의 코드를 '콜백 지옥'이라고 부릅니다. 웬만하면 지양해야 할 형태의 코드죠.
+<br><br>
+
+### 14.1.2 Promise
+
+<br>
+Promise는 콜백 지옥 같은 코드가 형성되지 않게 하는 방안으로 ES6에 도입된 기능입니다. 앞에서 본 코드를 Promise를 사용하여 구현해 볼까요? 다음 예제를 확인해 봅시다.
+<br><br>
+
+```js
+function increase(number) {
+  const promise = new Promise((resolve, reject) => {
+    //resolve는 성공, reject는 실패
+    setTimeout(() => {
+      const result = number + 10;
+      if(result > 50) {
+        // 50보다 높으면 에러 발생시키기
+        const e = new Error('NumberTooBig');
+        return reject(e);
+      }
+      resolve(result); // number 값에 +10 후 성공 처리
+    }, 1000);
+  });
+  return promise;
+}
+
+increase(0)
+  .then(number => {
+    // Promise에서 resolve된 값은 .then을 통해 받아 올 수 있음
+    console.log(number);
+    return increase(number); // Promise를 리턴하면
+  })
+  .then(number => {
+    // 또 .then으로 처리 가능
+    console.log(number);
+    return increase(number);
+  })
+  .then(number => {
+    console.log(number);
+    return increase(number);
+  })
+  .then(number => {
+    console.log(number);
+    return increase(number);
+  })
+  .then(number => {
+    console.log(number);
+    return increase(number);
+  })
+  .catch(e => [
+    //도중에 에러가 발생한다면 .catch를 통해 알 수 있음
+    console.log(e);
+  ]);
+```
+
+<br>
+여러 작업을 연달아 처리한다고 해서 함수를 여러 번 감싸는 것이 아니라 .then을 사용하여 그 다음 작업을 설정하기 때문에 콜백 지옥이 형성되지 않습니다.
+<br><br>
+
+### 14.1.3 async/await
+
+<br>
+async/await는 Promise를 더욱 쉽게 사용할 수 있도록 해 주는 ES2017(ES8) 문법입니다. 이 문법을 사용하려면 함수의 앞 부분에 async 키워드를 추가하고, 해당 함수 내부에서 Promise의 앞부분에 await 키워드를 사용합니다. 이렇게 하면 Promise가 끝날 때까지 기다리고, 결과 값을 특정 변수에 담을 수 있습니다.
+<br><br>
+
+```js
+function increase(number) {
+  const promise = new Promise((resolve, reject) => {
+    //resolve는 성공, reject는 실패
+    setTimeout(() => {
+      const result = number + 10;
+      if (result > 50) {
+        // 50보다 높으면 에러 발생시키기
+        const e = new Error("NumberTooBig");
+        return reject(e);
+      }
+      resolve(result); // number 값에 +10 후 성공 처리
+    }, 1000);
+  });
+  return promise;
+}
+
+async function runTasks() {
+  try {
+    // try/catch 구문을 사용하여 에러를 처리합니다.
+    let result = await increase(0);
+    console.log(result);
+    result = await increase(result);
+    console.log(result);
+    result = await increase(result);
+    console.log(result);
+    result = await increase(result);
+    console.log(result);
+    result = await increase(result);
+    console.log(result);
+    result = await increase(result);
+    console.log(result);
+  } catch (e) {
+    console.log(e);
+  }
+}
+```
+
+<br><br>
+
+---
+
+<br>
+
+## 14.2 axios로 API 호출해서 데이터 받아 오기
+
+<br>
+axios는 현재 가장 많이 사용되고 있는 자바스크립트 HTTP 클라이언트입니다. 이 라이브러리의 특징은 HTTP 요청을 Promise 기반으로 처리한다는 점입니다.
+<br><br>
+
+```js
+//App.js
+
+import React, { useState } from "react";
+import axios from "axios";
+
+const App = () => {
+  const [data, setData] = useState(null);
+  const onClick = () => {
+    axios
+      .get("https://jsonplaceholder.typicode.com/todos/1")
+      .then((response) => {
+        setData(response.data);
+      });
+  };
+  return (
+    <div>
+      <div>
+        <button onClick={onClick}>불러오기</button>
+      </div>
+      {data && (
+        <textarea
+          rows={7}
+          value={JSON.stringify(data, null, 2)}
+          readOnly={true}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;
+```
+
+<br>
+위 코드는 <b>불러오기</b> 버튼을 누르면 JSONPlaceholder(https://jsonplaceholder.typicode.com/)에서 제공하는 가짜 API를 호출하고 이에 대한 응답을 컴포넌트 상태에 넣어서 보여 주는 예제입니다. onClick 함수에서는 axios.get 함수를 사용했습니다. 이 함수는 파라미터로 전달된 주소에 GET 요청을 해 줍니다. 그리고 이에 대한 결과는 .then을 통해 비동기적으로 확인할 수 있습니다. 위 코드에 async를 적용하면 어떨까요?
+<br><br>
+
+```js
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const App = () => {
+  const [data, setData] = useState(null);
+  const onClick = async () => {
+    try {
+      const response = await axios.get(
+        'https://jsonplaceholder.typicode.com/todos/1',
+      );
+      setData(response.data);
+    } catch e {
+      console.log(e);
+    }
+  };
+  return (
+    <div>
+      <div>
+        <button onClick={onClick}>불러오기</button>
+      </div>
+      {data && <textarea rows={7} value={JSON.stringify(data, null, 2)} readOnly={true} />}
+    </div>
+  );
+};
+
+export default App;
+```
+
+<br>
+화살표 함수에 async/await을 적용할 때는 async () => {}와 같은 형식으로 적용합니다.
+<br><br>
+
+---
+
+<br>
+
+## 14.3 newsAPI API 키 발급받기
+
+<br>
+이번 프로젝트에서는 newsAPI에서 제공하는 API를 사용하여 최신 뉴스를 불러온 후 보여줄 것입니다. 이를 수행하기 위해서는 사전에 newsAPI에서 API 키를 발급받아야 합니다. API 키는 https://newsAPI.org/register 에 가입하면 발급받을 수 있습니다. 사용할 API 주소는 두 가지 형태입니다.
+<br><br>
+
+1. <b>전체 뉴스 불러오기</b> <br>
+   GET https://newsAPI.org/v2/top-headlines?country=kr&APIKey=67350c36ff6b44e592f9e1a9d902e532
+   <Br><br>
+
+2. <b>특정 카테고리 뉴스 불러오기</b><br>
+   GET https://newsAPI.org/v2/top-headlines?country=kr&category=business&APIKey=67350c36ff6b44e592f9e1a9d902e532
+   <br><br>
+
+여기서 카테고리는 business, entertainment, health, science, sports, technology 중에 골라서 사용할 수 있습니다. 카테고리를 생략하면 모든 카테고리의 뉴스를 불러옵니다. APIKey 값에는 앞에서 여러분이 발급받았던 API 키를 입력해 주세요.
+<br><br>
+
+---
+
+<br>
+
+## 14.4 뉴스 뷰어 UI 만들기
+
+<br>
+
+### 14.4.1 NewsItem 만들기
+
+<br>
+NewsItem 컴포넌트는 article이라는 객체를 props로 통째로 받아 와서 사용합니다. 
+<br><br>
+
+```js
+import React from "react";
+import styled from "styled-components";
+
+const NewsItemBlock = styled.div`
+  display: flex;
+  .thumbnail {
+    margin-right: 1rem;
+    img {
+      display: block;
+      width: 160px;
+      height: 100px;
+      object-fit: cover;
+    }
+  }
+  .contents {
+    h2 {
+      margin: 0;
+      a {
+        color: black;
+      }
+    }
+    p {
+      margin: 0;
+      line-height: 1.5;
+      margin-top: 0.5rem;
+      white-space: normal;
+    }
+  }
+  & + & {
+    margin-top: 3rem;
+  }
+`;
+
+const NewsItem = ({ article }) => {
+  const { title, description, url, urlToImage } = article;
+  return (
+    <NewsItemBlock>
+      {urlToImage && (
+        <div className="thumbnail">
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            <img src={urlToImage} alt="thumbnail" />
+          </a>
+        </div>
+      )}
+      <div className="contents">
+        <h2>
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            {title}
+          </a>
+        </h2>
+        <p>{description}</p>
+      </div>
+    </NewsItemBlock>
+  );
+};
+
+export default NewsItem;
+```
+
+<br>
+
+### 14.4.2 NewsList 만들기
+
+<br>
+나중에 이 컴포넌트에서 API를 요청하게 됩니다. 지금은 아직 데이터를 불러오지 않고 있으니 sampleArticle 이라는 객체에 미리 예시 데이터를 넣은 후 각 컴포넌트에 전달하여 가짜 내용이 보이게 합니다.
+<br><br>
+
+```js
+import React from "react";
+import styled from "styled-components";
+import NewsItem from "./NewsItem";
+
+const NewsListBlock = styled.div`
+  box-sizing: border-box;
+  padding-bottom: 3rem;
+  width: 768px;
+  margin: 0 auto;
+  margin-top: 2rem;
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+`;
+
+const sampleArticle = {
+  title: "제목",
+  description: "내용",
+  url: "https://google.com",
+  urlToImage: "https://via.placeholder.com/160",
+};
+
+const NewsList = () => {
+  return (
+    <NewsListBlock>
+      <NewsItem article={sampleArticle} />
+      <NewsItem article={sampleArticle} />
+      <NewsItem article={sampleArticle} />
+      <NewsItem article={sampleArticle} />
+      <NewsItem article={sampleArticle} />
+      <NewsItem article={sampleArticle} />
+    </NewsListBlock>
+  );
+};
+
+export default NewsList;
+```
+
+<br>
+
+---
+
+<br>
+
+## 14.5 데이터 연동하기
+
+<br>
+이제 NewsList 컴포넌트에서 이전에 연습 삼아 사용했던 API를 호출해보겠습니다. 컴포넌트가 화면에 보이는 시점에 API를 요청해 볼 텐데요. 이때 useEffect를 사용하여 컴포넌트가 처음 렌더링되는 시점에 API를 요청하면 됩니다. 여기서 주의할 점은 useEffect에 등록하는 함수에 async를 붙이면 안 된다는 것입니다. useEffect에서 반환해야 하는 값은 뒷정리 함수이기 때문입니다.
+<br><br>
+따라서 useEffect 내부에서 async/await를 사용하고 싶다면, 함수 내부에 async 키워드가 붙은 또 다른 함수를 만들어서 사용해 주어야 합니다. 추가로 loading이라는 상태도 관리하여 API 요청이 대기 중인지 판별할 것입니다. 요청이 대기 중일 때는 loading 값이 true가 되고, 요청이 끝나면 loading 값이 false가 되어야 합니다.
+<br><br>
+
+```js
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import axios from "axios";
+import NewsItem from "./NewsItem";
+
+const NewsListBlock = styled.div`
+  box-sizing: border-box;
+  padding-bottom: 3rem;
+  width: 768px;
+  margin: 0 auto;
+  margin-top: 2rem;
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+`;
+
+const NewsList = () => {
+  const [articles, setArticles] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    //async를 사용하는 함수 따로 선언
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          "https://newsapi.org/v2/top-headlines?country=kr&apiKey=67350c36ff6b44e592f9e1a9d902e532"
+        );
+        setArticles(response.data.articles);
+      } catch (e) {
+        console.log(e);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  // 대기 중일 때
+  if (loading) {
+    return <NewsListBlock>대기 중...</NewsListBlock>;
+  }
+  // 아직 articles 값이 설정되지 않았을 때
+  if (!articles) {
+    return null;
+  }
+
+  // articles 값이 유효할 때
+  return (
+    <NewsListBlock>
+      {articles.map((article) => (
+        <NewsItem key={article.url} article={article} />
+      ))}
+    </NewsListBlock>
+  );
+};
+
+export default NewsList;
+```
+
+<br>
+데이터를 불러와서 뉴스 데이터 배열을 map 함수를 사용하여 컴포넌트 배열로 변환할 때 신경 써야 할 부분이 있습니다. map 함수를 사용하기 전에 꼭 !articles를 조회하여 해당 값이 현재 null이 아닌지 검사해야 합니다. 이 작업을 하지 않으면, 아직 데이터가 없을 때 null에는 map 함수가 없기 때문에 렌더링 과정에서 오류가 발생합니다. 그래서 애플리케이션이 제대로 나타나지 않고 흰 페이지만 보이게 됩니다.
+<br><br>
+
+---
+
+<br>
+
+## 14.6 카테고리 기능 구현하기
+
+<br>
+이번에는 뉴스의 카테고리 선택 기능을 구현해 보겠습니다. 뉴스 카테고리는 총 여섯 개이며, 영어로 되어 있습니다. 화면에 카테고리를 보여 줄 때는 영어로 된 값을 그대로 보여 주지 않고, 다음 그림처럼 한글로 보여 준 뒤 클릭했을 때는 영어로 된 카테고리 값을 사용하도록 구현하겠습니다.
+<br><br>
+
+### 14.6.1 카테고리 선택 UI 만들기
+
+<br>
+먼저 components 디렉터리에 Categories.js 컴포넌트 파일을 생성하여 다음 코드를 작성하세요.
+<br><br>
+
+```js
+
+```
