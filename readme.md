@@ -6607,3 +6607,153 @@ export default SelectColors;
 ---
 
 <br>
+
+## 15.4 Consumer 대신 Hook 또는 static contextType 사용하기
+
+<br>
+이번에는 Context에 있는 값을 사용할 때 Consumer 대신 다른 방식을 사용하여 값을 받아 오는 방법을 알아보겠습니다.
+<br><br>
+
+### 15.4.1 useContext Hook 사용하기
+
+<br>
+리액트에 내장되어 있는 Hooks 중에서 useContext라는 Hook을 사용하면, 함수형 컴포넌트에서 Context를 아주 편하게 사용할 수 있습니다. ColorBox 컴포넌트의 코드를 다음과 같이 수정해 보세요.
+<br><br>
+
+```js
+import React, { useContext } from "react";
+import ColorContext from "../contexts/color";
+
+const ColorBox = () => {
+  const { state } = useContext(ColorContext);
+  return (
+    <>
+      <div
+        style={{
+          width: "64px",
+          height: "64px",
+          background: state.color,
+        }}
+      />
+      <div
+        style={{
+          width: "32px",
+          height: "32px",
+          background: state.subcolor,
+        }}
+      />
+    </>
+  );
+};
+
+export default ColorBox;
+```
+
+<br>
+이전보다 훨씬 간결해졌지요? 만약 children에 함수를 전달하는 Render Props 패턴이 불편하다면, useContext Hook을 사용하여 훨씬 편하게 Context 값을 조회할 수 있습니다. 그러나 Hook은 함수형 컴포넌트에서만 사용할 수 있다는 점에 주의하세요. 클래스형 컴포넌트에서는 Hook을 사용할 수 없습니다.
+<br><br>
+
+### 15.4.2 static contextType 사용하기
+
+<br>
+클래스형 컴포넌트에서 Context를 좀 더 쉽게 사용하고 싶다면 static contextType을 정의하는 방법이 있습니다. SelectColors 컴포넌트를 다음과 같이 클래스형으로 변환해 보세요. 그리고 Consumer 쪽 코드는 일단 제거해 주세요. 그리고 클래스 상단에 static contextType 값을 지정해 주세요.
+<br><br>
+
+```js
+import React, { Component } from "react";
+import ColorContext from "../contexts/color";
+
+const colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+
+class SelectColors extends Component {
+  static contextType = ColorContext;
+  render() {
+    return (
+      <div>
+        <h2>색상을 선택하세요.</h2>
+        <div style={{ display: "flex" }}>
+          {colors.map((color) => (
+            <div
+              key={color}
+              style={{
+                background: color,
+                width: "24px",
+                height: "24px",
+                cursor: "pointer",
+              }}
+            />
+          ))}
+        </div>
+        <hr />
+      </div>
+    );
+  }
+}
+
+export default SelectColors;
+```
+
+<br>
+이렇게 해 주면 this.context를 조회했을 때 현재 Context의 value를 가리키게 됩니다. 만약 setColor를 호출하고 싶다면 this.context.actions.setColor를 호출하면 되겠죠?
+<br><br>
+
+```js
+import React, { Component } from "react";
+import ColorContext from "../contexts/color";
+
+const colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+
+class SelectColors extends Component {
+  static contextType = ColorContext;
+
+  handleSetColor = (color) => {
+    this.context.actions.setColor(color);
+  };
+
+  handleSetSubcolor = (subcolor) => {
+    this.context.actions.setSubcolor(subcolor);
+  };
+
+  render() {
+    return (
+      <div>
+        <h2>색상을 선택하세요.</h2>
+        <div style={{ display: "flex" }}>
+          {colors.map((color) => (
+            <div
+              key={color}
+              style={{
+                background: color,
+                width: "24px",
+                height: "24px",
+                cursor: "pointer",
+              }}
+              onClick={() => this.handleSetColor(color)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                this.handleSetSubcolor(color);
+              }}
+            />
+          ))}
+        </div>
+        <hr />
+      </div>
+    );
+  }
+}
+
+export default SelectColors;
+```
+
+<br>
+static contextType을 정의하면 클래스 메서드에서도 Context에 넣어 둔 함수를 호출할 수 있다는 장점이 있습니다. 단점이라면, 한 클래스에서 하나의 Context 밖에 사용하지 못한다는 것입니다. 그러나 앞으로 새로운 컴포넌트를 작성할 때 클래스형으로 작성하는 일은 많지 않기 때문에 useContext를 사용하는 쪽을 권합니다.
+<br><br>
+
+---
+
+<br>
+
+## 15.5 정리
+
+<br>
+기존에는 컴포넌트 간에 상태를 교류해야 할 때 무조건 부모 -> 자식 흐름으로 props를 통해 전달해 주었는데요. 이제는 Context API를 통해 더욱 쉽게 상태를 교류할 수 있게 되었습니다. 프로젝트의 컴포넌트 구조가 꽤 간단하고 다루는 상태의 종류가 그다지 많지 않다면, 굳이 Context를 사용할 필요는 없습니다. 하지만 전역적으로 여기저기서 사용되는 상태가 있고 컴포넌트의 개수가 많은 상황이라면, Context API를 사용하는 것을 권합니다.
