@@ -5941,3 +5941,228 @@ export default NewsList;
 <br><br>
 
 ## 14.7 리액트 라우터 적용하기
+
+<br>
+방금 진행한 뉴스 뷰어 프로젝트에 리액트 라우터를 적용해 보겠습니다. 기존에는 카테고리 값을 useState로 관리했는데요. 이번에는 이 값을 리액트 라우터의 URL 파라미터를 사용하여 관리해 보겠습니다.
+<br><br>
+
+### 14.7.1 리액트 라우터의 설치 및 적용
+
+<br>
+
+### 14.7.2 NewsPage 생성
+
+<br>
+이번 프로젝트에 리액트 라우터를 적용할 때 만들어야 할 페이지는 단 하나입니다. src 디렉터리에 pages라는 디렉터리를 생성하고, 그 안에 NewsPage.js 파일을 만들어서 다음과 같이 작성해 보세요.
+<br><br>
+
+```js
+import React from "react";
+import Categories from "../components/Categories";
+import NewsList from "../components/NewsList";
+
+const NewsPage = ({ match }) => {
+  // 카테고리가 선택되지 않았으면 기본값 all로 사용
+  const category = match.params.category || "all";
+
+  return (
+    <>
+      <Categories />
+      <NewsList category={category} />
+    </>
+  );
+};
+
+export default NewsPage;
+```
+
+<br>
+현재 선택된 category 값을 URL 파라미터를 통해 사용할 것이므로 Categories 컴포넌트에서 현재 선택된 카테고리 값을 알려 줄 필요도 없고, onSelect 함수를 따로 전달해 줄 필요도 없습니다. 다 만들었으면 App의 기존 내용을 모두 지우고 Route를 정의해 주세요. 
+<br><br>
+
+```js
+import React from "react";
+import { Route } from "react-router-dom";
+import NewsPage from "./pages/NewsPage";
+
+const App = () => {
+  return <Route path="/:category?" component={NewsPage} />;
+};
+
+export default App;
+```
+
+<br>
+위 코드에서 사용된 path에 /:category?와 같은 형태로 맨 뒤에 물음표 문자가 들어가 있는데요. 이는 category 값이 선택적(optional)이라는 의미입니다. 즉, 있을 수도 있고 없을 수도 있다는 뜻이죠. category URL 파라미터가 없다면 전체 카테고리를 선택한 것으로 간주합니다. 
+<br><br>
+
+### 14.7.3 Categories에서 NavLink 사용하기
+
+<br>
+이제 Categories에서 기존의 onSelect 함수를 호출하여 카테고리를 선택하고, 선택된 카테고리에 다른 스타일을 주는 기능을 NavLink로 대체해 보겠습니다. div, a, button, input처럼 일반 HTML 요소가 아닌 특정 컴포넌트에 styled-components를 사용할 때는 styled(컴포넌트이름)`` 과 같은 형식을 사용합니다.
+<br><br>
+
+```js
+import React from 'react';
+import styled from 'styled-components';
+import { NavLink } from 'react-router-dom';
+
+
+const categories = [
+  (…)
+];
+
+
+
+const CategoriesBlock = styled.div`
+  (...)
+`;
+
+
+
+const Category = styled(NavLink)`
+  font-size: 1.125rem;
+  cursor: pointer;
+  white-space: pre;
+  text-decoration: none;
+  color: inherit;
+  padding-bottom: 0.25rem;
+
+
+
+&:hover {
+    color: #495057;
+  }
+
+
+
+&.active {
+    font-weight: 600;
+    border-bottom: 2px solid #22b8cf;
+    color: #22b8cf;
+    &:hover {
+      color: #3bc9db;
+    }
+  }
+
+
+
+& + & {
+    margin-left: 1rem;
+  }
+`;
+const Categories = () => {
+  return (
+    <CategoriesBlock>
+      {categories.map(c => {
+        <Category
+        key={c.name}
+        activeClassName="active"
+        exact={c.name === 'all'}
+        to={c.name === 'all' ? '/' : `/&{c.name}`}
+        >
+          {c.text}
+        </Category>
+      ))}
+      </CategoriesBlock>
+    );
+  };
+
+
+export default Categories;
+```
+
+<br>
+NavLink로 만들어진 Category 컴포넌트에 to 값은 "/카테고리이름"으로 설정해 주었습니다. 그리고 카테고리 중에서 <b>전체보기</b>의 경우는 예외적으로 "/all" 대신에 "/"로 설정했습니다. to 값이 "/"를 가리키고 있을 때는 exact 값을 true로 해 주어야 합니다. 이 값을 설정하지 않으면, 다른 카테고리가 선택되었을 때도 <b>전체보기</b> 링크에 active 스타일이 적용되는 오류가 발생합니다.
+<br><br>
+
+## 14.8 usePromise 커스텀 Hook 만들기
+
+<br>
+이번에는 컴포넌트에서 API 호출처럼 Promise를 사용해야 하는 경우 더욱 간결하게 코드를 작성할 수 있도록 해 주는 커스텀 Hook을 만들어서 우리 프로젝트에 적용해 보겠습니다. 우리가 만들 Hook의 이름은 usePromise입니다. src 디렉터리에 lib 디렉터리를 만들고, 그 안에 usePromise.js를 다음과 같이 작성해 보세요.
+<br><br>
+
+```js
+import { useState, useEffect } from "react";
+
+export default function usePromise(promiseCreator, deps) {
+  // 대기 중/완료/실패에 대한 상태 관리
+  const [loading, setLoading] = useState(false);
+  const [resolved, setResolved] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const process = async () => {
+      setLoading(true);
+      try {
+        const resolved = await promiseCreator();
+        setResolved(resolved);
+      } catch (e) {
+        setError(e);
+      }
+      setLoading(false);
+    };
+    process();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return [loading, resolved, error];
+}
+```
+
+<br>
+프로젝트의 다양한 곳에서 사용될 수 있는 유틸 함수들은 보통 이렇게 src 디렉터리에 lib 디렉터리를 만든 후 그 안에 작성합니다. <br><br>
+방금 만든 usePromise Hook은 Promise의 대기 중, 완료 결과, 실패 결과에 대한 상태를 관리하며, usePromise의 의존 배열 deps를 파라미터로 받아 옵니다. 파라미터로 받아 온 deps 배열은 usePromise 내부에서 사용한 useEffect의 의존 배열로 설정되는데요. 이 배열을 설정하는 부분에서 ESLint 경고가 나타나게 됩니다. 이 경고를 무시하려면 특정 줄에서만 ESLint 규칙을 무시하도록 주석을 작성해 주어야 합니다. 에디터에 초록색 경고 줄이 그어졌을 때 그 위에 커서를 올리면 <b>빠른 수정...</b>이라는 문구가 나타나는데, 이를 클릭하면 자동으로 ESLint 규칙을 비활성화시키는 주석을 입력할 수 있습니다.
+<br><br>
+코드를 저장한 뒤 NewsList 컴포넌트에서 usePromise를 사용해 보세요.
+<br><br>
+
+```js
+import React from "react";
+import styled from "styled-components";
+import NewsItem from "./NewsItem";
+import axios from "axios";
+import usePromise from "../lib/usePromise";
+
+const NewsListBlock = styled.div`
+  (...)
+`;
+
+const NewsList = ({ category }) => {
+  const [loading, response, error] = usePromise(() => {
+    const query = category === "all" ? "" : `&category=${category}`;
+    return axios.get(
+      `https://newsapi.org/v2/top-headlines?country=kr${query}&apiKey=0a8c4202385d4ec1bb93b7e277b3c51f`
+    );
+  }, [category]);
+
+  // 대기 중일 때
+  if (loading) {
+    return <NewsListBlock>대기 중...</NewsListBlock>;
+  }
+
+  // 아직 response 값이 설정되지 않았을 때
+  if (!response) {
+    return null;
+  }
+  // 에러가 발생했을 때
+  if (error) {
+    return <NewsListBlock>에러 발생!</NewsListBlock>;
+  }
+
+  // response 값이 유효할 때
+  const { articles } = response.data;
+  return (
+    <NewsListBlock>
+      {articles.map((article) => (
+        <NewsItem key={article.url} article={article} />
+      ))}
+    </NewsListBlock>
+  );
+};
+
+export default NewsList;
+```
+
+<br>
+usePromise를 사용하면 NewsList에서 대기 중 상태 관리와 useEffect 설정을 직접 하지 않아도 되므로 코드가 훨씬 간결해집니다. 요청 상태를 관리할 때 무조건 커스텀 Hook을 만들어서 사용해야 하는 것은 아니지만, 상황에 따라 적절히 사용하면 좋은 코드를 만들어 갈 수 있습니다.
