@@ -6342,3 +6342,268 @@ export default App;
 
 <br>
 Provider를 사용할 때는 value 값을 명시해 주어야 제대로 작동한다는 것을 꼭 기억하세요!
+<br><br>
+
+---
+
+<br>
+
+## 15.3 동적 Context 사용하기
+
+<br>
+지금까지 배운 내용으로는 고정적인 값만 사용할 수 있습니다. 이번에는 Context의 값을 업데이트 해야 하는 경우 어떻게 해야 하는지 알아보겠습니다.
+<br><br>
+
+### 15.3.1 Context 파일 수정하기
+
+<br>
+Context의 value에는 무조건 상태 값만 있어야 하는 것은 아닙니다. 함수를 전달해 줄 수도 있습니다. 기존에 작성했던 ColorContext의 코드를 다음과 같이 수정해 주세요. 이번에 코드를 작성한 후 작성하면 오류가 발생할 텐데, 해당 오류는 나중에 수정할 것이므로 걱정하지 마세요.
+<br><br>
+
+```js
+import React, { createContext, useState } from 'react';
+
+const ColorContext = createContext({
+  state: { color: 'black', subColor; 'red'},
+  actions: {
+    setColor: () => {},
+    setSubcolor: () => {}
+  }
+});
+
+const ColorProvider = ({ children }) => {
+  const [color, setColor] = useState('black');
+  const [subColor, setSubcolor] = useState('red');
+
+  const value = {
+    state: { color, subcolor },
+    actions: { setColor, setSubcolor }
+  };
+  return (
+    <ColorContext.Provider value={value}>{children}</ColorContext.Provider>
+  );
+};
+
+//const ColorConsumer = ColorContext.Consumer와 같은 의미
+const { Consumer: ColorConsumer } = ColorContext;
+
+//ColorProvider와 ColorCosumer 내보내기
+export { ColorProvider, ColorConsumer };
+
+export default ColorContext;
+```
+
+<br>
+위 파일에서 ColorProvider라는 컴포넌트를 새로 작성해 주었습니다. 그리고 그 컴포넌트에서는 ColorContext.Provider를 렌더링하고 있죠. 이 Provider의 value에는 상태는 state로, 업데이트 함수는 actions로 묶어서 전달하고 있습니다. Context에서 값을 동적으로 사용할 때 반드시 묶어줄 필요는 없지만, 이렇게 state와 actions 객체를 따로따로 분리해 주면 나중에 다른 컴포넌트에서 Context의 값을 사용할 때 편합니다.
+<br><br>
+추가로 createContext를 사용할 떄 기본값으로 사용할 객체도 수정했습니다. createContext의 기본값은 실제 Proivder의 value에 넣는 객체의 형태와 일치시켜 주는 것이 좋습니다. 그렇게 하면 Context 코드를 볼 떄 내부 값이 어떻게 구성되어 있는지 파악하기도 쉽고, 실수로 Provider를 사용하지 않았을 때 리액트 애플리케이션에서 에러가 발생하지 않습니다.
+<br><br>
+
+### 15.3.2 새로워진 Context를 프로젝트에 반영하기
+
+<br>
+코드를 다 작성했으면 App 컴포넌트에서 ColorContext.Provider를 ColorProvider로 대체하세요.
+<br><br>
+
+```js
+import React from "react";
+import ColorBox from "./components/ColorBox";
+import { ColorProvider } from "./contexts/color";
+
+const App = () => {
+  return (
+    <ColorProvider>
+      <div>
+        <ColorBox />
+      </div>
+    </ColorProvider>
+  );
+};
+
+export default App;
+```
+
+<br>
+ColorBox도 마찬가지로 ColorContext.Consumer를 ColorConsumer로 변경하세요. 또한, 사용할 value의 형태도 바뀌었으니 이에 따른 변화를 다음과 같이 반영시켜 보세요.
+<br><br>
+
+```js
+import React from 'react';
+import { ColorConsumer } from '../contexts/color';
+
+const ColorBox = () => {
+  return (
+    <ColorConsumer>
+      {value => (
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              background: value.state.color
+            }}
+          />
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              background: value.state.subcolor
+            }}
+          />
+        </>
+      )}
+      </ColorConsumer>
+  );
+};
+
+export default ColorBox;
+```
+
+<br>
+위 코드에서 객체 비구조화 할당 문법을 사용하면 다음과 같이 value를 조회하는 것을 생략할 수 있습니다.
+<br><br>
+
+```js
+import React from "react";
+import { ColorConsumer } from "../contexts/color";
+
+const ColorBox = () => {
+  return (
+    <ColorConsumer>
+      {{ state }} => (
+      <>
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            background: value.state.color,
+          }}
+        />
+        <div
+          style={{
+            width: "32px",
+            height: "32px",
+            background: value.state.subcolor,
+          }}
+        />
+      </>
+      )}
+    </ColorConsumer>
+  );
+};
+
+export default ColorBox;
+```
+
+<br>
+
+### 15.3.3 색상 선택 컴포넌트 만들기
+
+<br>
+이번에는 Context의 actions에 넣어 준 함수를 호출하는 컴포넌트를 만들어 보겠습니다. components 디렉터리에 SelectColors.js라는 파일을 생성하여 다음 코드를 작성해 보세요. 지금은 Consumer를 사용하지 않고 UI만 준비해 봅시다.
+<br><br>
+
+```js
+import React from "react";
+
+const colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+
+const SelectColors = () => {
+  return (
+    <div>
+      <h2>색상을 선택하세요.</h2>
+      <div style={{ display: "flex" }}>
+        {colors.map((color) => (
+          <div
+            key={color}
+            style={{
+              background: color,
+              width: "24px",
+              height: "24px",
+              cursor: "pointer",
+            }}
+          />
+        ))}
+      </div>
+      <hr />
+    </div>
+  );
+};
+
+export default SelectColors;
+```
+
+<br>
+다 작성했으면 이 컴포넌트를 App 컴포넌트에서 ColorBox 위에 렌더링하세요.
+<br><br>
+
+```js
+import React from "react";
+import ColorBox from "./components/ColorBox";
+import { ColorProvider } from "./contexts/color";
+import SelectColors from "./components/SelectColors";
+
+const App = () => {
+  return (
+    <ColorProvider>
+      <div>
+        <SelectColors />
+        <ColorBox />
+      </div>
+    </ColorProvider>
+  );
+};
+
+export default App;
+```
+
+<br>
+이제 해당 SelectColors에서 마우스 왼쪽 버튼을 클릭하면 큰 정사각형의 색상을 변경하고, 마우스 오른쪽 버튼을 클릭하면 작은 정사각형의 색상을 변경하도록 구현해 보겠습니다.
+<br><br>
+
+```js
+import React from "react";
+import { ColorConsumer } from "../contexts/color";
+
+const colors = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+
+const SelectColors = () => {
+  return (
+    <div>
+      <h2>색상을 선택하세요.</h2>
+      <ColorConsumer>
+        {({ actions }) => (
+          <div style={{ display: "flex" }}>
+            {colors.map((color) => (
+              <div
+                key={color}
+                style={{
+                  background: color,
+                  width: "24px",
+                  height: "24px",
+                  cursor: "pointer",
+                }}
+                onClick={() => actions.setColor(color)}
+                onContextMenu={(e) => {
+                  e.preventDefault(); // 마우스 오른쪽 버튼 클릭 시 메뉴가 뜨는 것을 무시함
+                  actions.setSubcolor(color);
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </ColorConsumer>
+      <hr />
+    </div>
+  );
+};
+
+export default SelectColors;
+```
+
+<br>
+마우스 오른쪽 버튼 클릭 이벤트는 onContextMenu를 사용하면 됩니다. 오른쪽 클릭 시 원래 브라우저 메뉴가 나타나지만, 여기서 e.preventDefault()를 호출하면 메뉴가 뜨지 않습니다.
+<br><br>
+
+---
+
+<br>
