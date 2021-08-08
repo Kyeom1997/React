@@ -5718,5 +5718,226 @@ export default NewsList;
 <br><br>
 
 ```js
+import React from "react";
+import styled from "styled-components";
 
+const categories = [
+  {
+    name: "all",
+    text: "전체보기",
+  },
+  {
+    name: "business",
+    text: "비즈니스",
+  },
+  {
+    name: "entertainment",
+    text: "엔터테인먼트",
+  },
+  {
+    name: "health",
+    text: "건강",
+  },
+  {
+    name: "science",
+    text: "과학",
+  },
+  {
+    name: "sports",
+    text: "스포츠",
+  },
+  {
+    name: "technology",
+    text: "기술",
+  },
+];
+
+const CategoriesBlock = styled.div`
+  display: flex;
+  padding: 1rem;
+  width: 768px;
+  margin: 0 auto;
+  @media screen and (max-width: 768px) {
+    width: 100%;
+    overflow-x: auto;
+  }
+`;
+
+const Category = styled.div`
+  font-size: 1.125rem;
+  cursor: pointer;
+  white-space: pre;
+  text-decoration: none;
+  color: inherit;
+  padding-bottom: 0.25rem;
+
+  &:hover {
+    color: #495057;
+  }
+
+  & + & {
+    margin-left: 1rem;
+  }
+`;
+const Categories = () => {
+  return (
+    <CategoriesBlock>
+      {categories.map((c) => (
+        <Category key={c.name}>{c.text}</Category>
+      ))}
+    </CategoriesBlock>
+  );
+};
+
+export default Categories;
 ```
+
+<br>
+위 코드에서는 categories라는 배열 안에 name과 text 값이 들어가 있는 객체들을 넣어 주어서 한글로 된 카테고리와 실제 카테고리 값을 연결시켜 주었습니다. 여기서 name은 실제 카테고리 값을 가리키고, text 값은 렌더링할 때 사용할 한글 카테고리를 가리킵니다.
+<br><br>
+이제 App에서 category 상태를 useState로 관리하겠습니다. 추가로 category 값을 업데이트하는 onSelect라는 함수도 만들어 주곘습니다. 그러고 나서 category와 onSelect 함수를 Categories 컴포넌트에게 props로 전달해 주세요. 또한, category 값을 NewsList 컴포넌트에게도 전달해 주어야 합니다.
+<br><br>
+
+```js
+import React, { useState, useCallback } from "react";
+import NewsList from "./components/NewsList";
+import Categories from "./components/Categories";
+
+const App = () => {
+  const [category, setCategory] = useState("all");
+  const onSelect = useCallback((category) => setCategory(category), []);
+
+  return (
+    <>
+      <Categories category={category} onSelect={onSelect} />
+      <NewsList category={category} />
+    </>
+  );
+};
+
+export default App;
+```
+
+<br>
+다음으로 Categories에서는 props로 전달받은 onSelect를 각 Category 컴포넌트의 onClick으로 설정해 주고, 현재 선택된 카테고리 값에 따라 다른 스타일을 적용시켜 보세요.
+<br><br>
+
+```js
+import React from 'react';
+import styled, { css } from 'styled-components';
+
+const categories = [
+  (...)
+];
+
+const CategoriesBlock = styled.div`
+  (...)
+`;
+
+const Category = styled.div`
+  font-size: 1.125rem;
+  cursor: pointer;
+  white-space: pre;
+  text-decoration: none;
+  color: inherit;
+  padding-bottom: 0.25rem;
+
+  &:hover {
+    color: #495057;
+  }
+
+  ${props =>
+    props.active && css`
+      font-weight: 600;
+      border-bottom: 2px solid #22b8cf;
+      color: #22b8cf;
+      &:hover {
+        color: #3bc9db;
+      }
+  `}
+
+  & + & {
+    margin-left: 1rem;
+  }
+`;
+const Categories = ({ onSelect, category }) => {
+  return (
+    <CategoriesBlock>
+      {categories.map(c => (
+        <Category
+          key={c.name}
+          active={category === c.name}
+          onClick={() => onSelect(c.name)}
+        >
+          {c.text}
+        </Category>
+      ))}
+    </CategoriesBlock>
+  );
+};
+
+export default Categories;
+```
+
+<br>
+
+### 14.6.2 API를 호출할 때 카테고리 지정하기
+
+<br>
+지금은 뉴스 API를 요청할 때 따로 카테고리를 선택하지 않고 뉴스 목록을 불러오고 있습니다. NewsList 컴포넌트에서 현재 props로 받아 온 category에 따라 카테고리를 지정하여 API를 요청하도록 구현해 보세요.
+<br><br>
+
+```js
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import NewsItem from './NewsItem';
+import axios from 'axios';
+
+
+const NewsListBlock = styled.div`
+(...)
+`;
+
+
+
+const NewsList = ({ category }) => {
+  const [articles, setArticles] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+
+
+useEffect(() => {
+    // async를 사용하는 함수 따로 선언
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+       const query = category === 'all' ? '' : `&category=${category}`;
+       const response = await axios.get(
+         `https://newsapi.org/v2/top-headlines?country=kr${query}&apiKey=67350c36ff6b44e592f9e1a9d902e532`,
+        );
+        setArticles(response.data.articles);
+      } catch (e) {
+        console.log(e);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [category]);
+
+
+
+(…)
+};
+
+
+
+export default NewsList;
+```
+
+<br>
+현재 category 값이 무엇인지에 따라 요청할 주소가 동적으로 바뀌고 있습니다. category 값이 all이라면 query 값을 공백으로 설정하고, all이 아니라면 "&category=카테고리" 형태의 문자열을 만들도록 했습니다. 그리고 이 query를 요청할 때 주소에 포함시켜 주었습니다.
+<br><br>
+추가로 category 값이 바뀔 때마다 뉴스를 새로 불러와야 하기 때문에 useEffect의 의존 배열(두 번째 파라미터로 설정하는 배열)에 category를 넣어 주어야 합니다.
+<br><br>
+
+## 14.7 리액트 라우터 적용하기
