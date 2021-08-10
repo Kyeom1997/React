@@ -6893,3 +6893,369 @@ const unsubscribe = store.subscribe(listener);
 
 unsubscribe(); //추후 구독을 비활성화할 때 함수를 호출
 ```
+
+<br>
+
+---
+
+<br>
+
+## 16.2 리액트 없이 쓰는 리덕스
+
+<br>
+리덕스는 리액트에 종속되는 라이브러리가 아닙니다. 리액트에서 사용하려고 만들어졌지만 실제로 다른 UI 라이브러리/프레임워크와 함께 사용할 수도 있습니다(예: angular-redux, ember redux, Vue에서도 사용할 수 있지만, Vue에서는 리덕스와 유사한 vuex를 주로 사용합니다.)
+<br><br>
+리덕스는 바닐라(vanilla) 자바스크립트와 함께 사용할 수도 있습니다. 바닐라 자바스크립트는 라이브러리나 프레임워크 없이 사용하는 순수 자바스크립트 그 자체를 의미합니다. 이번에는 바닐라 자바스크립트 환경에서 리덕스를 사용하여 리덕스의 핵심 기능과 작동 원리를 이해해 보겠습니다.
+<br><br>
+
+### 16.2.1 Parcel로 프로젝트 만들기
+
+<br>
+프로젝트를 구성하기 위해 Parcel이라는 도구를 사용하겠습니다. 이 도구를 사용하면 아주 쉽고 빠르게 웹 애플리케이션 프로젝트를 구성할 수 있습니다. 먼저 parcel-bundler를 설치해 주세요.
+<br><br>
+
+```
+& yarn global add parcel-bundler
+# yarn global이 잘 설치되지 않는다면 npm install -g parcel-bundler를 해 보세요.
+```
+
+<br>
+프로젝트 디렉터리를 생성한 후 package.json 파일을 생성하세요.
+<br><br>
+
+```
+$ mkdir vanilla-redux
+$ cd vanilla-redux
+# package.json 파일을 생성합니다.
+$ yarn init -y
+```
+
+<br>
+에디터로 해당 디렉터리를 열어서 index.html과 index.js 파일을 만들어 주세요.
+<br><br>
+
+```html
+<html>
+  <body>
+    <div>바닐라 자바스크립트</div>
+    <script src="./index.js"></script>
+  </body>
+</html>
+```
+
+<br>
+
+```js
+console.log("hello parcel");
+```
+
+<br>
+다 작성한 후에 다음 명령어를 실행하면 개발용 서버가 실행됩니다.
+<br><br>
+
+```
+$ parcel index.html
+Server running at http://localhost:1234
+  Built in 548ms.
+```
+
+<br>
+다음으로 yarn을 사용하여 리덕스 모듈을 설치하세요.
+<br><br>
+
+```
+$ yarn add redux
+```
+
+<br>
+
+### 16.2.2 간단한 UI 구성하기
+
+<br>
+먼저 간단한 스타일 파일을 작성하겠습니다.
+<br><br>
+
+```css
+.toggle {
+  border: 2px solid black;
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  box-sizing: border-box;
+}
+
+.toggle.active {
+  background: yellow;
+}
+```
+
+<br>
+다음으로 index.html을 수정하세요.
+<br><br>
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="index.css" />
+  </head>
+  <body>
+    <div class="toggle"></div>
+    <hr />
+    <h1>0</h1>
+    <button id="increase">+1</button>
+    <button id="decrease">-1</button>
+    <script src="./index.js"></script>
+  </body>
+</html>
+```
+
+<br>
+다음과 같이 간단한 UI를 구성했습니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/128878523-25ee121e-cbe1-4821-bcfe-a33d1dbd09e1.png)
+<br>
+
+### 16.2.3 DOM 레퍼런스 만들기
+
+<br>
+이번 프로젝트에서는 UI를 관리할 때 별도의 라이브러리를 사용하지 않기 때문에 DOM을 직접 수정해 주어야 합니다. 다음과 같이 자바스크립트 파일 상단에 수정할 DOM 노드를 가리키는 값을 미리 선언해 줍니다. 기존 코드는 지워 주세요.
+<br><br>
+
+```js
+const divToggle = document.querySelector(".toggle");
+const counter = document.querySelector("h1");
+const btnIncrease = document.querySelector("#increase");
+const btnDecrease = document.querySelector("#decrease");
+```
+
+<br>
+
+### 16.2.4 액션 타입과 액션 생성 함수 정의
+
+<br>
+프로젝트의 상태에 변화를 일으키는 액션이라고 합니다. 먼저 액션에 이름을 정의해 주겠습니다. 액션 이름은 문자열 형태로, 주로 대문자로 작성하며 액션 이름은 고유해야 합니다. 이름이 중복되면 의도하지 않은 결과가 발생할 수 있기 때문입니다.
+<br><br>
+
+```js
+const divToggle = document.querySelector(".toggle");
+const counter = document.querySelector("h1");
+const btnIncrease = document.querySelector("#increase");
+const btnDecrease = document.querySelector("#decrease");
+
+const TOGGLE_SWITCH = "TOGGLE_SWITCH";
+const INCREASE = "INCREASE";
+const DECREASE = "DECREASE";
+```
+
+<br>
+다음으로 이 액션 이름을 사용하여 액션 객체를 만드는 액션 생성 함수를 작성해 줍니다. 액션 객체는 type 값을 반드시 갖고 있어야 하며, 그 외에 추후 상태를 업데이트할 때 참고하고 싶은 값은 여러분 마음대로 넣을 수 있습니다.
+<br><br>
+
+```js
+const divToggle = document.querySelector(".toggle");
+const counter = document.querySelector("h1");
+const btnIncrease = document.querySelector("#increase");
+const btnDecrease = document.querySelector("#decrease");
+
+const TOGGLE_SWITCH = "TOGGLE_SWITCH";
+const INCREASE = "INCREASE";
+const DECREASE = "DECREASE";
+
+const toggleSwitch = () => ({ type: TOGGLE_SWITCH });
+const increase = (difference) => ({ type: INCREASE, difference });
+const decrease = () => ({ type: DECREASE });
+```
+
+<br>
+
+### 16.2.5 초깃값 설정
+
+<br>
+이 프로젝트에서 사용할 초깃값을 정의해 주겠습니다. 초깃값의 형태는 자유입니다. 숫자일 수도 있고, 문자열일 수도 있고, 객체일 수도 있습니다.
+<br><br>
+
+```js
+const divToggle = document.querySelector(".toggle");
+const counter = document.querySelector("h1");
+const btnIncrease = document.querySelector("#increase");
+const btnDecrease = document.querySelector("#decrease");
+
+const TOGGLE_SWITCH = "TOGGLE_SWITCH";
+const INCREASE = "INCREASE";
+const DECREASE = "DECREASE";
+
+const toggleSwitch = () => ({ type: TOGGLE_SWITCH });
+const increase = (difference) => ({ type: INCREASE, difference });
+const decrease = () => ({ type: DECREASE });
+
+const initialState = {
+  toggle: false,
+  counter: 0,
+};
+```
+
+<br>
+
+### 16.2.6 리듀서 함수 정의
+
+<br>
+리듀서는 변화를 일으키는 함수입니다. 함수의 파라미터로는 state와 action 값을 받아 옵니다.
+<br><br>
+
+```js
+const divToggle = document.querySelector('.toggle');
+const counter = document.querySelector('h1');
+const btnIncrease = document.querySelector('#increase');
+const btnDecrease = document.querySelector('#decrease');
+
+const TOGGLE_SWITCH = 'TOGGLE_SWITCH';
+const INCREASE = 'INCREASE';
+const DECREASE = 'DECREASE';
+
+const toggleSwitch = () => ({ type: TOGGLE_SWITCH });
+const increase = difference => ({ type: INCREASE, difference })
+const decrease = () => ({ type: DECREASE });
+
+const initialState = {
+  toggle: false,
+  counter: 0
+};
+
+//state가 undefined일 때는 initialState를 기본값으로 사용
+function reducer(state = initialState, action) {
+  //action.type에 따라 다른 작업을 처리함
+  switch (action.type) {
+    case TOGGLE_SWITCH:
+      return {
+        ...state, //불변성 유지를 해 주어야 합니다.
+        toggle: !state.toggle
+      };
+    case INCREASE:
+      return {
+        ...state,
+        counter: state.counter + action.difference
+      };
+    case DECREASE:
+      return {
+        ...state,
+        counter: state.counter - 1
+      };
+    default;
+      return state;
+  }
+}
+```
+
+<br>
+리듀서 함수가 맨 처음 호출될 때는 state 값이 undefined 입니다. 해당 값이 undefined로 주어졌을 때는 initialState를 기본값으로 설정하기 위해 함수의 파라미터 쪽에 기본값이 설정되어 있습니다. <br><br>
+리듀서에서는 상태의 불변성을 유지하면서 데이터에 변화를 일으켜 주어야 합니다. 이 작업을 할 때 spread 연산자(...)를 사용하면 편합니다. 단, 객체의 구조가 복잡해지면(예를 들어 object.something.inside.value) spread 연산자로 불변성을 관리하며 업데이트하는 것이 굉장히 번거로울 수 있고 코드의 가독성도 나빠지기 때문에 리덕스의 상태는 최대한 깊지 않은 구조로 진행하는 것이 좋습니다.
+<br><br>
+객체의 구조가 복잡해지거나 배열도 함께 다루는 경우 immer 라이브러리를 사용하면 좀 더 쉽게 리듀서를 작성할 수 있습니다.
+<br><br>
+
+### 16.2.7 스토어 만들기
+
+<br>
+이제 스토어를 만들어 보겠습니다. 스토어를 만들 때는 createStore 함수를 사용합니다. 이 함수를 사용하려면 코드 상단에 import 구문을 넣어 리덕스에서 해당 함수를 불러와야 하고, 함수의 파라미터에는 리듀서 함수를 넣어 주어야 합니다.
+<br><br>
+
+```js
+import { createStore } from 'redux';
+
+(...)
+
+const store = createStore(reducer);
+```
+
+<br>
+이제 스토어를 생성했으니, 스토어 내장 함수들을 사용해 줄 차례입니다.
+<br><br>
+
+### 16.2.8 render 함수 만들기
+
+<br>
+render라는 함수를 작성해 보겠습니다. 이 함수는 상태가 업데이트될 때마다 호출되며, 리액트의 render 함수와는 다르게 이미 html을 사용하여 만들어진 UI의 속성을 상태에 따라 변경해 줍니다.
+<br><Br>
+
+```js
+(...)
+
+const store = createStore(reducer);
+
+const render = () => {
+  const state = store.getState(); //현재 상태를 불러옵니다.
+  // 토글 처리
+  if (state.toggle) {
+    divToggle.classList.add('active');
+  } else {
+    divToggle.classList.remove('active');
+  }
+  // 카운터 처리
+  counter.innerText = state.counter;
+};
+
+render();
+```
+
+<br>
+
+### 16.2.9 구독하기
+
+<br>
+이제 스토어의 상태가 바뀔 때마다 방금 만든 render 함수가 호출되도록 해 줄 것입니다. 이 작업은 스토어의 내장 함수 subscribe를 사용하여 수행할 수 있습니다. <br><br>
+subscribe 함수의 파라미터로는 함수 형태의 값을 전달해 줍니다. 이렇게 전달된 함수는 추후 액션이 발생하여 상태가 업데이트 될 때마다 호출됩니다.
+<br><br>
+이번 프로젝트에서는 subscribe 함수를 직접 사용하지만, 추후 리액트 프로젝트에서 리덕스를 사용할 때는 이 함수를 직접 사용하지 않을 것입니다. 왜냐하면, 컴포넌트에서 리덕스 상태를 조회하는 과정에서 react-redux라는 라이브러리가 이 작업을 대신해 주기 때문입니다. 이제 상태가 업데이트될 때마다 render 함수를 호출하도록 코드를 작성해 봅시다.
+<br><br>
+
+```js
+(...)
+
+const render = () => {
+  const state = store.getState(); //현재 상태를 불러옵니다.
+  // 토글 처리
+  if (state.toggle) {
+    divToggle.classList.add('active');
+  } else {
+    divToggle.classList.remove('active');
+  }
+  // 카운터 처리
+  counter.innerText = state.counter;
+};
+
+render();
+store.subscribe(render);
+```
+
+<br>
+
+### 16.2.10 액션 발생시키기
+
+<br>
+액션을 발생시키는 것을 디스패치라고 합니다. 디스패치를 할 때는 스토어의 내장 함수 dispatch를 사용합니다. 파라미터는 액션 객체를 넣어 주면 됩니다. <br><br>
+다음과 같이 각 DOM 요소에 클릭 이벤트를 설정하세요. 이벤트 함수 내부에서는 dispatch 함수를 사용하여 액션을 스토어에게 전달해 주겠습니다.
+<br><br>
+
+```js
+(...)
+divToggle.onclick = () => {
+  store.dispatch(toggleSwitch());
+};
+btnIncrease.onclick = () => {
+  store.dispatch(increase(1));
+};
+btnDecrease.onclick = () => {
+  store.dispatch(decrease());
+};
+```
+
+<br>
+화면에 나타나는 원과 하단의 버튼을 클릭해 보세요. 상태 변화가 잘 일어나고 있나요?
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/128884462-a1849c4b-d8e2-484f-b367-6445a622b55b.png)
+
+---
+
+<br>
