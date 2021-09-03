@@ -7709,7 +7709,3 @@ import rootReducer from "./modules";
 ```
 
 <br>
-
----
-
-<br>
