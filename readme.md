@@ -7709,3 +7709,232 @@ import rootReducer from "./modules";
 ```
 
 <br>
+
+---
+
+<br>
+
+## 17.4 리액트 애플리케이션에 리덕스 적용하기
+
+<br>
+이제 드디어 리액트 애플리케이션에 리덕스를 적용할 차례입니다. 스토어를 만들고 리액트 애플리케이션에 리덕스를 적용하는 작업은 src 디렉터리의 index.js에서 이루어집니다.
+<br><br>
+
+### 17.4.1 스토어 만들기
+
+<br>
+가장 먼저 스토어를 생성합니다.
+<br><br>
+
+```js
+//src/index.js
+import React from "react";
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import "./index.css";
+import App from "./App";
+import rootReducer from "./modules";
+
+const store = createStore(rootReducer);
+
+ReactDOM.render(<App />, document.getElementById("root"));
+```
+
+<br>
+
+### 17.4.2 Provider 컴포넌트를 사용하여 프로젝트에 리덕스 적용하기
+
+<br>
+리액트 컴포넌트에서 스토어를 사용할 수 있도록 App 컴포넌트를 react-redux에서 제공하는 Provider 컴포넌트로 감싸 줍니다. 이 컴포넌트를 사용할 때는 store를 props로 전달해 주어야 합니다.
+<br><br>
+
+```js
+//src/index.js
+import React from "react";
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import "./index.css";
+import App from "./App";
+import rootReducer from "./modules";
+
+const store = createStore(rootReducer);
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
+```
+
+<br>
+
+### 17.4.3 Redux DevTools의 설치 및 적용
+
+<br>
+Redux DevTools는 리덕스 개발자 도구이며, 크롬 확장 프로그램으로 설치하여 사용할 수 있습니다. 패키지를 설치하여 적용하면 코드가 훨씬 깔끔해집니다.
+<br><br>
+
+```
+$ yarn add redux-devtools-extension
+```
+
+<br>
+
+```js
+//src/index.js
+import React from "react";
+import ReactDOM from "react-dom";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import { composeWithDevTools } from "redux-devtools-extension";
+import "./index.css";
+import App from "./App";
+import rootReducer from "./modules";
+
+const store = createStore(rootReducer, composeWithDevTools());
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
+);
+```
+
+<br>
+
+---
+
+<br>
+
+## 17.5 컨테이너 컴포넌트 만들기
+
+<br>
+이제는 컴포넌트에서 리덕스 스토어에 접근하여 원하는 상태를 받아 오고, 또 액션도 디스패치해 줄 차례입니다. 리덕스 스토어와 연동된 컴포넌트를 컨테이너 컴포넌트라고 부릅니다.
+<br><br>
+
+### 17.5.1 CounterContainer 만들기
+
+<br>
+src 디렉터리에 containers 디렉터리를 생성하고, 그 안에 CounterContainer 컴포넌트를 만드세요.
+<br><br>
+
+```js
+import React from "react";
+import Counter from "../components/Counter";
+
+const CounterContainer = () => {
+  return <Counter />;
+};
+
+export default CounterContainer;
+```
+
+<br>
+위 컴포넌트를 리덕스와 연동하려면 react-redux에서 제공하는 connect 함수를 사용해야 합니다. 이 함수는 다음과 같이 사용합니다.
+<br><br>
+
+```js
+connect(mapStateToProps, mapDispatchToProps)(연동할 컴포넌트)
+```
+
+<br>
+여기서 mapStateToProps는 리덕스 스토어 안의 상태를 컴포넌트의 props로 넘겨주기 위해 설정하는 함수이고, mapDispatchToProps는 액션 생성 함수를 컴포넌트의 props로 넘겨주기 위해 사용하는 함수입니다. 이렇게 connect 함수를 호출하고 나면 또 다른 함수를 반환합니다. 반환된 함수에 컴포넌트를 파라미터로 넣어 주면 리덕스와 연동된 컴포넌트가 만들어집니다. 위 코드를 더 쉽게 풀면 다음과 같은 형태입니다.
+<br><br>
+
+```js
+const makeContainer = connect(mapStateToProps, mapDispatchToProps)
+makeContainer(타깃 컴포넌트)
+```
+
+<br>
+
+자, 이제 CounterContainer 컴포넌트에서 connect를 사용해 볼까요?
+<br><br>
+
+```js
+import React from "react";
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+const mapStateToprops = (state) => ({
+  number: state.counter.number,
+});
+const mapDispatchToProps = (dispatch) => ({
+  //임시 함수
+  increase: () => {
+    console.log("increase");
+  },
+  decrease: () => {
+    console.log("decrease");
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer);
+```
+
+<br>
+mapStateToProps와 mapDispatchProps에서 반환하는 객체 내부의 값들은 컴포넌트의 props로 전달됩니다. mapStateToProps는 state를 파라미터로 받아 오며, 이 값은 현재 스토어가 지니고 있는 상태를 가리킵니다. mapDispatchToProps의 경우 store의 내장 함수 dispatch를 파라미터로 받아옵니다. 현재 mapDispatchToProps에서는 진행 절차를 설명하기 위해 임시로 console.log를 사용하고 있습니다. 다음으로 App에서 Counter를 CounterContainer로 교체하세요.
+<br><br>
+
+```js
+import React from "react";
+import Todos from "./components/Todos";
+import CounterContainer from "./containers/CounterContainer";
+
+const App = () => {
+  return (
+    <div>
+      <CounterContainer />
+      <hr />
+      <Todos />
+    </div>
+  );
+};
+
+export default App;
+```
+
+<br>
+
+자, 이번에는 console.log 대신 액션 생성 함수를 불러와서 액션 객체를 만들고 디스패치해 주겠습니다.
+<br><br>
+
+```js
+import React from "react";
+import { connect } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = ({ number, increase, decrease }) => {
+  return (
+    <Counter number={number} onIncrease={increase} onDecrease={decrease} />
+  );
+};
+
+const mapStateToprops = (state) => ({
+  number: state.counter.number,
+});
+const mapDispatchToProps = (dispatch) => ({
+  //임시 함수
+  increase: () => {
+    dispatch(increase());
+  },
+  decrease: () => {
+    dispatch(decrease());
+  },
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(CounterContainer);
+```
+
+<br>
+connect 함수를 사용할 때는 일반적으로 위 코드와 같이 mapStateToProps와 mapDispatchToProps를 미리 선언해 놓고 사용합니다. 하지만 connect 함수 내부에 익명 함수 형태로 선언해도 문제가 되지 않습니다. 어떻게 보면 코드가 더 깔끔해지기도 하는데요.
