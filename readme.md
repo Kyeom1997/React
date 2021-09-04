@@ -7297,3 +7297,419 @@ btnDecrease.onclick = () => {
 ---
 
 <br>
+
+# 17장. 리덕스를 사용하여 리액트 애플리케이션 상태 관리하기
+
+<br>
+이번 장에서는 리덕스를 사용하여 리액트 애플리케이션 상태를 관리하는 방법을 알아보겠습니다. 소규모 프로젝트에서는 컴포넌트가 가진 state를 사용하는 것만으로도 충분하지만, 프로젝트의 규모가 커짐에 따라 상태 관리가 번거로워질 수 있습니다.
+<br><br>
+리액트 애플리케이션에서 리덕스를 사용하면, 상태 업데이트에 관한 로직을 모듈로 따로 분리하여 컴포넌트 파일과 별개로 관리할 수 있으므로 코드를 유지 보수하는 데 도움이 됩니다. 또한, 여러 컴포넌트에서 동일한 상태를 공유해야 할 때 매우 유용하며, 실제 업데이트가 필요한 컴포넌트만 리렌더링되도록 쉽게 최적화해 줄 수도 있습니다.
+<br><br>
+앞에서 바닐라 자바스크립트 환경에서 리덕스를 사용할 때 스토어의 내장 함수인 store.dispatch와 store.subscribe 함수를 사용했지요? 리액트 애플리케이션에서 리덕스를 사용할 때는 store 인스턴스를 직접 사용하기보다는 주로 react-redux라는 라이브러리에서 제공하는 유틸 함수(connect)와 컴포넌트(Provider)를 사용하여 리덕스 관련 작업을 처리합니다.
+<br><br>
+
+## 17.1 작업 환경 설정
+
+<br>
+리액트 프로젝트를 생성하고, 해당 프로젝트에 리덕스를 적용해 봅시다.
+<br><br>
+
+```
+$ yarn create react-app react-redux-tutorial
+$ cd react-redux-tutorial
+$ yarn add redux react-redux
+```
+
+<br>
+Prettier를 적용하고 싶다면 디렉터리에 다음과 같이 .prettierrc 파일을 작성하세요.
+<br><br>
+
+```js
+{
+  "singleQuote": true,
+  "semi": true,
+  "useTabs": false,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 80
+}
+```
+
+<br>
+
+---
+
+<br>
+
+## 17.2 UI 준비하기
+
+<br>
+리액트 프로젝트에서 리덕스를 사용할 때 가장 많이 사용하는 패턴은 프레젠테이셔널 컴포넌트와 컨테이너 컴포넌트를 분리하는 것입니다. 여기서 프레젠테이셔널 컴포넌트란 주로 상태 관리가 이루어지지 않고, 그저 props를 받아 와서 화면에 UI를 보여 주기만 하는 컴포넌트를 말합니다. 이와 달리 컨테이너 컴포넌트는 리덕스와 연동되어 있는 컴포넌트로, 리덕스로부터 상태를 받아 오기도 하고 리덕스 스토어에 액션을 디스패치하기도 합니다. 
+<br><br>
+
+이러한 패턴은 리덕스를 사용하는 데 필수 사항은 아닙니다. 다만 이 패턴을 사용하면 코드의 재사용성도 높아지고, 관심사의 분리가 이루어져 UI를 작성할 때 좀 더 집중할 수 있습니다. UI에 관련된 프레젠테이셔널 컴포넌트는 src/components 경로에 저장하고, 리덕스와 연동된 컨테이너 컴포넌트는 src/containers 컴포넌트에 작성합니다.
+<br><br>
+
+### 17.2.1 카운터 컴포넌트 만들기
+
+<br>
+숫자를 더하고 뺄 수 있는 카운터 컴포넌트를 만들어 봅시다.
+<br><br>
+
+```js
+//components/Counter.js
+import React from "react";
+
+const Counter = ({ number, onIncrease, onDecrease }) => {
+  return (
+    <div>
+      <h1>{number}</h1>
+      <div>
+        <button onClick={onIncrease}>+1</button>
+        <button onClick={onDecrease}>-1</button>
+      </div>
+    </div>
+  );
+};
+
+export default Counter;
+```
+
+<br>
+이제 이 컴포넌트를 App 컴포넌트에서 렌더링합니다.
+<br><br>
+
+```js
+import React from "react";
+import Counter from "./components/Counter";
+
+const App = () => {
+  return (
+    <div>
+      <Counter number={0} />
+    </div>
+  );
+};
+
+export default App;
+```
+
+<br>
+
+### 17.2.2 할 일 목록 컴포넌트 만들기
+
+<br>
+
+이번에는 해야 할 일을 추가하고, 체크하고, 삭제할 수 있는 할 일 목록 컴포넌트를 만들어 보겠습니다.
+<br><br>
+
+```js
+//components/Todos.js
+import React from "react";
+
+const TodoItem = ({ todo, onToggle, onRemove }) => {
+  return (
+    <div>
+      <input type="checkbox" />
+      <span>예제 텍스트</span>
+      <button>삭제</button>
+    </div>
+  );
+};
+
+const Todos = ({
+  input, //인풋에 입력되는 텍스트
+  todos, //할 일 목록이 들어 있는 객체
+  onChangeInput,
+  onInsert,
+  onToggle,
+  onRemove,
+}) => {
+  const onSubmit = (e) => {
+    e.preventDefault();
+  };
+  return (
+    <div>
+      <form onSubmit={onSubmit}>
+        <input />
+        <button type="submit">등록</button>
+      </form>
+      <div>
+        <TodoItem />
+        <TodoItem />
+        <TodoItem />
+        <TodoItem />
+        <TodoItem />
+      </div>
+    </div>
+  );
+};
+
+export default Todos;
+```
+
+<br>
+
+---
+
+<br>
+
+## 17.3 리덕스 관련 코드 작성하기
+
+<br>
+이제 프로젝트에 리덕스를 사용해 보겠습니다. 리덕스 관련 코드를 준비합니다. 리덕스를 사용할 때는 액션 타입, 액션 생성 함수, 리듀서 코드를 작성해야 하는데요. 이 코드들을 각각 다른 파일에 작성하는 방법도 있고, 기능별로 묶어서 파일 하나에 작성하는 방법도 있습니다.
+<br><br>
+
+![image](https://user-images.githubusercontent.com/78855917/132099671-d4eed1b4-59af-4c11-b3a9-5533ec1610e2.png)
+<br>
+
+이 방법은 가장 일반적인 구조로 actions, constants, reducers 라는 세 개의 디렉터리를 만들고 그 안에 기능별로 파일을 하나씩 만드는 방식입니다. 코드를 종류에 따라 다른 파일에 작성하여 정리할 수 있어서 편리하지만, 새로운 액션을 만들 때마다 세 종류의 파일을 모두 수정해야 하기 때문에 불편하기도 합니다.
+<br><Br>
+
+![image](https://user-images.githubusercontent.com/78855917/132099727-23bc950f-6969-4012-b4ba-6978578ced37.png)
+<br>
+
+이 방법은 액션 타입, 액션 생성 함수, 리듀서 함수를 기능별로 파일 하나에 몰아서 다 작성하는 방식입니다. 이러한 방식을 Ducks 패턴이라고 부르며, 앞서 설명한 일반적인 구조로 리덕스를 사용하다가 불편함을 느낀 개발자들이 자주 사용합니다. 이 책에서는 두 번째로 소개한 방식인 Ducks 패턴을 사용하여 코드를 작성하겠습니다.
+<br><br>
+
+### 17.3.1 counter 모듈 작성하기
+
+<br>
+Ducks 패턴을 사용하여 액션 타입, 액션 생성 함수, 리듀서를 작성한 코드를 '모듈'이라고 합니다. 먼저 counter 모듈을 작성해 봅시다.
+<br><br>
+
+#### 17.3.1.1 액션 타입 정의하기
+
+<br>
+modules 디렉터리를 생성하고 그 안에 counter.js 파일을 다음과 같이 작성하세요.
+<br><br>
+
+```js
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+```
+
+<br>
+가장 먼저 해야 할 작업은 액션 타입을 정의하는 것입니다. 액션 타입은 대문자로 정의하고, 문자열 내용은 '모듈 이름/액션 이름'과 같은 형태로 작성합니다. 문자열 안에 모듈 이름을 넣음으로써, 나중에 프로젝트가 커졌을 때 액션의 이름이 충돌되지 않게 해 줍니다. 예를 들어 SHOW 혹은 INITIALIZE라는 이름을 가진 액션은 쉽게 중복될 수 있겠죠? 하지만 앞에 모듈 이름을 붙여 주면 액션 이름이 겹치는 것을 걱정하지 않아도 됩니다. 
+<br><Br>
+
+#### 17.3.1.2 액션 생성 함수 만들기
+
+<br>
+액션 타입을 정의한 다음에는 액션 생성 함수를 만들어 주어야 합니다.
+<br><br>
+
+```js
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+
+export const increase = () => ({ type: INCREASE });
+export const decrease = () => ({ type: DECREASE });
+```
+
+<br>
+더 필요하거나 추가할 값이 없으니 그냥 위와 같이 만들어 주면 됩니다. 여기서 주의해야 할 점은 앞부분에 export라는 키워드가 들어간다는 것입니다. 이렇게 함으로써 추후 이 함수를 다른 파일에서 불러와 사용할 수 있습니다.
+<br><br>
+
+### 17.3.1.3 초기 상태 및 리듀서 함수 만들기
+
+<br>
+이제 counter 모듈의 초기 상태와 리듀서 함수를 만들어 줍니다.
+<br><br>
+
+```js
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+
+export const increase = () => ({ type: INCREASE });
+export const decrease = () => ({ type: DECREASE });
+
+const initialState = {
+  number: 0,
+};
+
+function counter(state = initialState, action) {
+  switch (action.type) {
+    case INCREASE:
+      return {
+        number: state.number + 1,
+      };
+    case DECREASE:
+      return {
+        number: state.number - 1,
+      };
+    default:
+      return state;
+  }
+}
+
+export default counter;
+```
+
+<br>
+이 모듈의 초기 상태에는 number 값을 설정해 주었으며, 리듀서 함수에는 현재 상태를 참조하여 새로운 객체를 생성해서 반환하는 코드를 작성해 주었습니다. 마지막으로 export default 키워드를 사용하여 함수를 내보내 주었습니다. 여기서 export default는 단 한 개의 함수만 내보낼 수 있습니다. 불러오는 방식도 다릅니다.
+<br><br>
+
+```js
+import counter from "./counter";
+import { increase, decrease } from "./counter";
+//한꺼번에 불러오고 싶을 때
+import counter, { increase, decrease } from "./counter";
+```
+
+<br>
+
+### 17.3.2 todos 모듈 만들기
+
+<br>
+
+#### 17.3.2.1 액션 타입 정의하기
+
+<br>
+이전과 마찬가지로 가장 먼저 해야 할 일은 액션 타입 정의입니다.
+<br><br>
+
+```js
+const CHANGE_INPUT = "todos/CHANGE_INPUT"; //인풋 값을 변경함
+const INSERT = "todos/INSERT"; // 새로운 todo를 등록함
+const TOGGLE = "todos/TOGGLE"; // todo를 체크/체크 해제함
+const REMOVE = "todos/REMOVE"; // todo를 제거함
+```
+
+<br>
+
+#### 17.3.2.2 액션 생성 함수 만들기
+
+<br>
+다음으로 액션 생성 함수를 만듭니다. 조금 전과 달리 이번에는 액션 생성 함수에서 파라미터가 필요합니다. 전달 받은 파라미터는 액션 객체 안에 추가 필드로 들어가게 됩니다.
+<br><br>
+
+```js
+const CHANGE_INPUT = "todos/CHANGE_INPUT"; //인풋 값을 변경함
+const INSERT = "todos/INSERT"; // 새로운 todo를 등록함
+const TOGGLE = "todos/TOGGLE"; // todo를 체크/체크 해제함
+const REMOVE = "todos/REMOVE"; // todo를 제거함
+
+export const changInput = (input) => ({
+  type: CHANGE_INPUT,
+  input,
+});
+
+let id = 3; //insert가 호출될 때마다 1씩 더해집니다.
+export const insert = (text) => ({
+  type: INSERT,
+  todo: {
+    id: id++,
+    text,
+    done: false,
+  },
+});
+
+export const toggle = (id) => ({
+  type: TOGGLE,
+  id,
+});
+
+export const remove = (id) => ({
+  type: REMOVE,
+  id,
+});
+```
+
+<br>
+위 액션 생성 함수 중에서 insert 함수는 액션 객체를 만들 때 파라미터 외에 사전에 이미 선언되어 있는 id라는 값에도 의존합니다. 이 액션 생성 함수는 호출될 때마다 id 값에 1씩 더해 줍니다. 이 id 값은 각 todo 객체가 들고 있게 될 고윳값이죠.
+<br><br>
+여기서 id 값이 3인 이유는 다음 절에서 초기 상태를 작성할 때 todo 객체 두 개를 사전에 미리 넣어 둘 것이므로 그 다음에 새로 추가될 항목의 id가 3이기 때문입니다.
+<br><br>
+
+#### 17.3.2.3 초기 상태 및 리듀서 함수 만들기
+
+<br>
+이제 모듈의 초기 상태와 리듀서 함수를 작성합시다. 이번에는 업데이트 방식이 조금 까다로워집니다. 객체에 한 개 이상의 값이 들어가므로 불변성을 유지해 주어야 하기 때문이죠. spread 연산자(...)를 잘 활용하여 작성해 보세요. 배열에 변화를 줄 때는 배열 내장 함수를 사용하여 구현하면 됩니다. 
+<br><br>
+
+```js
+(...)
+const initialState = {
+  input: '',
+  todos: [
+    {
+      id: 1,
+      text: '리덕스 기초 배우기',
+      done: true
+    },
+    {
+      id: 2,
+      text: '리액트와 리덕스 사용하기',
+      done: false
+    }
+  ]
+};
+
+function todos(state = initialState, action) {
+  switch (action.type) {
+    case CHANGE_INPUT:
+      return {
+        ...state,
+        input: action.input
+      };
+    case INSERT:
+      return {
+        ...state,
+        todos: state.todos.concat(action.todo)
+      };
+    case TOGGLE:
+      return {
+        ...state,
+        todos: state.todos.map(todo =>
+          todo.id === action.id ? { ...todo, done: !todo.done } : todo
+          )
+      };
+    case REMOVE:
+      return {
+        ...state,
+        todos: state.todos.filter(todo => todo.id !== action.id)
+      };
+    default:
+      return state;
+  }
+}
+
+export default todos;
+```
+
+<br>
+
+### 17.3.3 루트 리듀서 만들기
+
+<br>
+이번 프로젝트에서는 리듀서를 여러 개 만들었지요? 나중에 createStore 함수를 사용하여 스토어를 만들 때는 리듀서를 하나만 사용해야 합니다. 그렇기 때문에 기존에 만들었던 리듀서를 하나로 합쳐 주어야 하는데요. 이 작업은 리덕스에서 제공하는 combineReducers라는 유틸 함수를 사용하면 쉽게 처리할 수 있습니다.
+<br><br>
+
+```js
+//modules/index.js
+import { combineReducers } from "redux";
+import counter from "./counter";
+import todos from "./todos";
+
+const rootReducer = combineReducers({
+  counter,
+  todos,
+});
+
+export default rootReducer;
+```
+
+<br>
+파일 이름을 이렇게 index.js로 설정해 주면 나중에 불러올 때 디렉터리 이름까지만 입력하여 불러올 수 있습니다. 다음과 같이 말이죠.
+<br><br>
+
+```js
+import rootReducer from "./modules";
+```
+
+<br>
+
+---
+
+<br>
