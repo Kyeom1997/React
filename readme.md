@@ -8432,3 +8432,258 @@ immer를 사용한다고 해서 모든 업데이트 함수에 immer를 적용할
 ---
 
 <br>
+
+## 17.7 Hooks를 사용하여 컨테이너 컴포넌트 만들기
+
+<br>
+리덕스 스토어와 연동된 컨테이너 컴포넌트를 만들 때 connect 함수를 사용하는 대신 react-redux에서 제공하는 Hooks를 사용할 수도 있습니다.
+<br><br>
+
+### 17.7.1 useSelector로 상태 조회하기
+
+<br>
+useSelector Hook을 사용하면 connect 함수를 사용하지 않고도 리덕스의 상태를 조회할 수 있습니다. useSelector의 사용법은 다음과 같습니다.
+<br><br>
+
+```js
+const 결과 = useSelector(상태 선택 함수);
+```
+
+<br>
+여기서 상태 선택 함수는 mapStateToProps와 형태가 똑같습니다. 이제 CounterContainer에서 connect 함수 대신 useSelector를 사용하여 counter.number 값을 조회함으로써 Counter에게 props를 넘겨 줍시다.
+<br><br>
+
+```js
+import React from "react";
+import { useSelector } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  return <Counter number={number} />;
+};
+
+export default CounterContainer;
+```
+
+<br>
+
+### 17.7.2 useDispatch를 사용하여 액션 디스패치 하기
+
+<br>
+이번에는 useDispatch라는 Hook에 대해 알아봅시다. 이 Hook은 컴포넌트 내부에서 스토어의 내장 함수 dispatch를 사용할 수 있게 해 줍니다. 컨테이너 컴포넌트에서 액션을 디스패치해야한다면 이 Hook을 사용하면 됩니다. 사용법은 다음과 같습니다.
+<br><Br>
+
+```js
+const dispatch = useDispatch();
+dispatch({ type: "SAMPLE_ACTION" });
+```
+
+<br>
+이제 CounterContainer에서도 이 Hook을 사용하여 INCREASE와 DECREASE 액션을 발생시켜 봅시다.
+<br><br>
+
+```js
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  const dispatch = useDispatch();
+  return (
+    <Counter
+      number={number}
+      onIncrease={() => dispatch(increase())}
+      onDecrease={() => dispatch(decrease())}
+    />
+  );
+};
+
+export default CounterContainer;
+```
+
+<br>
+지금은 숫자가 바뀌어서 컴포넌트가 리렌더링될 때마다 onIncrease 함수와 onDecrease 함수가 새롭게 만들어지고 있습니다. 만약 컴포넌트 성능을 최적화해야 하는 상황이 온다면 useCallback으로 액션을 디스패치하는 함수를 감싸주는 것이 좋습니다.
+<br><br>
+
+```js
+import React, { useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import Counter from "../components/Counter";
+import { increase, decrease } from "../modules/counter";
+
+const CounterContainer = () => {
+  const number = useSelector((state) => state.counter.number);
+  const dispatch = useDispatch();
+  const onIncrease = useCallback(() => dispatch(increase()), [dispatch]);
+  const onDecrease = useCallback(() => dispatch(decrease()), [dispatch]);
+  return (
+    <Counter number={number} onIncrease={onIncrease} onDecrease={onDecrease} />
+  );
+};
+
+export default CounterContainer;
+```
+
+<br>
+
+### 17.7.3 useStore를 사용하여 리덕스 스토어 사용하기
+
+<br>
+useStore Hooks를 사용하면 컴포넌트 내부에서 리덕스 스토어 객체를 직접 사용할 수 있습니다. 사용법은 다음과 같습니다.
+<br><br>
+
+```js
+const store = useStore();
+store.dispatch({ type: "SAMPLE_ACTION" });
+store.getState();
+```
+
+<br>
+useStore는 컴포넌트에서 정말 어쩌다가 스토어에 직접 접근해야 하는 상황에만 사용해야 합니다. 이를 사용해야 하는 상황은 흔치 않을 것입니다.
+<br><br>
+
+### 17.7.4 TodosContainer를 Hooks로 전환하기
+
+<br>
+이제 TodosContainer를 connect 함수 대신에 useSelector와 useDispatch Hooks를 사용하는 형태로 전환해 봅시다.
+<br><Br>
+
+```js
+import React, { useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../modules/todos";
+import Todos from "../components/Todos";
+
+const TodosContainer = () => {
+  const { input, todos } = useSelector(({ todos }) => ({
+    input: todos.input,
+    todos: todos.todos,
+  }));
+  const dispatch = useDispatch();
+  const onChangeInput = useCallback(
+    (input) => dispatch(changeInput(input)),
+    [dispatch]
+  );
+  const onInsert = useCallback((text) => dispatch(insert(text)), [dispatch]);
+  const onToggle = useCallback((id) => dispatch(toggle(id)), [dispatch]);
+  const onRemove = useCallback((id) => dispatch(remove(id)), [dispatch]);
+
+  return (
+    <Todos
+      input={input}
+      todos={todos}
+      onChangeInput={onChangeInput}
+      onInsert={onInsert}
+      onToggle={onToggle}
+      onRemove={onRemove}
+    />
+  );
+};
+
+export default TodosContainer;
+```
+
+<br>
+이번에는 useSelector를 사용할 때 비구조화 할당 문법을 활용했습니다. 또한, useDispatch를 사용할 때 각 액션을 디스패치하는 함수를 만들었는데요. 위 코드의 경우 액션의 종류가 많은데 어떤 값이 액션 생성 함수의 파라미터로 사용되어야 하는지 일일이 명시해 주어야 하므로 조금 번거롭습니다. 이 부분은 우선 컴포넌트가 잘 작동하는 것을 확인하고 나서 한번 개선해 보겠습니다.
+<br><br>
+
+### 17.7.5 useActions 유틸 Hook을 만들어서 사용하기
+
+<br>
+useActions는 원래 react-redux에 내장된 상태로 릴리즈될 계획이었으나 리덕스 개발 팀에서 꼭 필요하지 않다고 판단하여 제외된 Hook입니다. 그 대신 공식 문서에서 그대로 복사하여 사용할 수 있도록 제공하고 있습니다.
+<br><br>
+
+- [공식 문서](https://react-redux.js.org/next/api/hooks#recipe-useactions)
+  <br>
+
+이 Hook을 사용하면, 여러 개의 액션을 사용해야 하는 경우 코드를 훨씬 깔끔하게 정리하여 작성할 수 있습니다. src 디렉터리에 lib 디렉터리를 만들고, 그 안에 useActions.js 파일을 다음과 같이 작성해 보세요.
+<Br><br>
+
+```js
+import { bindActionCreators } from "redux";
+import { useDispatch } from "react-redux";
+import { useMemo } from "react";
+
+export default function useActions(actions, deps) {
+  const dispatch = useDispatch();
+  return useMemo(
+    () => {
+      if (Array.isArray(actions)) {
+        return actions.map((a) => bindActionCreators(a, dispatch));
+      }
+      return bindActionCreators(actions, dispatch);
+    },
+    deps ? [dispatch, ...deps] : deps
+  );
+}
+```
+
+<br>
+방금 작성한 useActions Hook은 액션 생성 함수를 액션을 디스패치하는 함수로 변환해 줍니다. 액션 생성 함수를 사용하여 액션 객체를 만들고, 이를 스토어에 디스패치하는 작업을 해주는 함수를 자동으로 만들어 주는 것이죠.
+<br><br>
+useActions는 두 가지 파라미터가 필요합니다. 첫 번째 파라미터는 액션 생성 함수로 이루어진 배열입니다. 두 번째 파라미터는 deps 배열이며, 이 배열 안에 들어 있는 원소가 바뀌면 액션을 디스패치하는 함수를 새로 만들게 됩니다. 한번 TodosContainer에서 useActions를 불러와 사용해 봅시다.
+<br><br>
+
+```js
+import React from "react";
+import { useSelector } from "react-redux";
+import { changeInput, insert, toggle, remove } from "../modules/todos";
+import Todos from "../components/Todos";
+import useActions from "../lib/useActions";
+
+const TodosContainer = () => {
+  const { input, todos } = useSelector(({ todos }) => ({
+    input: todos.input,
+    todos: todos.todos,
+  }));
+
+  const [onChangeInput, onInsert, onToggle, onRemove] = useActions(
+    [changeInput, insert, toggle, remove],
+    []
+  );
+  return (
+    <Todos
+      input={input}
+      todos={todos}
+      onChangeInput={onChangeInput}
+      onInsert={onInsert}
+      onToggle={onToggle}
+      onRemove={onRemove}
+    />
+  );
+};
+
+export default TodosContainer;
+```
+
+<br>
+
+### 17.7.6 connect 함수와의 주요 차이점
+
+<br>
+앞으로 컨테이너 컴포넌트를 만들 때 connect 함수를 사용해도 좋고, useSelector와 useDispatch를 사용해도 좋습니다. 리덕스 관련 Hook이 있다고 해서 기존 connect 함수가 사라지는 것은 아니므로, 더 편한 것을 사용하면 됩니다. 하지만 Hooks를 사용하여 컨테이너 컴포넌트를 만들 때 잘 알아 두어야 할 차이점이 있습니다.
+<br><br>
+connect 함수를 사용하여 컨테이너 컴포넌트를 만들었을 경우, 해당 컨테이너 컴포넌트의 부모 컴포넌트가 리렌더링될 때 해당 컨테이너 컴포넌트의 props가 바뀌지 않았다면 리렌더링이 자동으로 방지되어 성능이 최적화 됩니다. 
+<br><br>
+반면 useSelector를 사용하여 리덕스 상태를 조회했을 때는 이 최적화 작업이 자동으로 이루어지지 않으므로, 성능 최적화를 위해서는 React.memo를 컨테이너 컴포넌트에 사용해 주어야 합니다.
+<br><br>
+
+```js
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { changeInput, insert, toggle, remove } from '../modules/todos';
+import Todos from '../components/Todos';
+import useActions from '../lib/useActions';
+
+const TodosContainer = () => {
+  (...)
+};
+
+export default React.memo(TodosContainer);
+```
+
+<br>
