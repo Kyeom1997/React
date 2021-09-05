@@ -1289,7 +1289,7 @@ class MyComponent extends Component {
   };
   render() {
     const { name, favoriteNumber, children } = this.props; // 비구조화 할당
-    return (…);
+    return (...);
   }
 }
 
@@ -4099,7 +4099,7 @@ Sass 라이브러리를 불러올 때는 node_modules 내부 라이브러리 경
   @include media('<768px') {
     background: $oc-gray-9;
   }
-  (…)
+  (...)
 }
 ```
 
@@ -5186,7 +5186,7 @@ const Profiles = () => {
           </NavLink>
         </li>
       </ul>
-      (…)
+      (...)
     </div>
   );
 };
@@ -5926,7 +5926,7 @@ useEffect(() => {
 
 
 
-(…)
+(...)
 };
 
 
@@ -6009,7 +6009,7 @@ import { NavLink } from 'react-router-dom';
 
 
 const categories = [
-  (…)
+  (...)
 ];
 
 
@@ -8146,6 +8146,287 @@ const Todos = ({
 export default Todos;
 ```
 
+<br>
+
+---
+
+<br>
+
+## 17.6 리덕스 더 편하게 사용하기
+
+<br>
+이번에는 리덕스를 좀 더 편하게 사용하는 방법을 알아보겠습니다. 액션 생성 함수, 리듀서를 작성할 때 redux-actions라는 라이브러리와 이전에 배웠던 immer 라이브러리를 활용하면 리덕스를 훨씬 편하게 사용할 수 있습니다.
+<br><br>
+
+### 17.6.1 redux-actions
+
+<br>
+redux-actions를 사용하면 액션 생성 함수를 더 짧은 코드로 작성할 수 있습니다. 그리고 리듀서를 작성할 때도 switch/case 문이 아닌 handleActions라는 함수를 사용하여 각 액션마다 업데이트 함수를 설정하는 형식으로 작성해 줄 수 있습니다.
+<br><Br>
+
+#### 17.6.1.1 counter 모듈에 적용하기
+
+<br>
+counter 모듈에 작성된 액션 생성 함수를 createAction이란 함수를 사용하여 만들어 주겠습니다.
+<br><br>
+
+```js
+import { createAction } from 'redux-actions';
+
+const INCREASE = 'counter/INCREASE';
+const DECREASE = 'counter/DECREASE';
+
+export const increase = createAction(INCREASE);
+export const decrease = createAction(DECREASE);
+
+(...)
+```
+
+<br>
+createAction을 사용하면 매번 객체를 직접 만들어 줄 필요 없이 더욱 간단하게 액션 생성 함수를 선언할 수 있습니다. 이번에는 리듀서 함수도 더 간단하고 가독성 높게 작성해 보겠습니다. handleActions라는 함수를 사용합니다.
+<br><Br>
+
+```js
+import { createAction, handleActions } from "redux-actions";
+
+const INCREASE = "counter/INCREASE";
+const DECREASE = "counter/DECREASE";
+
+export const increase = createAction(INCREASE);
+export const decrease = createAction(DECREASE);
+
+const initialState = {
+  number: 0,
+};
+
+const counter = handleActions(
+  {
+    [INCREASE]: (state, action) => ({ number: state.number + 1 }),
+    [DECREASE]: (state, action) => ({ number: state.number - 1 }),
+  },
+  initialState
+);
+
+export default counter;
+```
+
+<br>
+handleActions 함수의 첫 번째 파라미터에는 각 액션에 대한 업데이트 함수를 넣어 주고, 두 번째 파라미터에는 초기 상태를 넣어 줍니다.
+<br><br>
+
+#### 17.6.1.2 todos 모듈에 적용하기
+
+<br>
+똑같은 작업을 todos 모듈에도 적용해 봅시다. 먼저 액션 생성 함수를 교체해 줄 텐데, 조금 다른 점이 있습니다. 바로 각 액션 생성 함수에서 파라미터를 필요로 한다는 점입니다. createAction으로 액션을 만들면 액션에 필요한 추가 데이터는 payload라는 이름을 사용합니다. 예를 들면 다음과 같습니다.
+<br><br>
+
+```js
+const MY_ACTION = "sample/MY_ACTION";
+const myAction = createAction(MY_ACTION);
+const action = myAction("hello world");
+/* 
+  결과:
+  { type: MY_ACTION, payload:'hello world' }
+*/
+```
+
+<br>
+액션 생성 함수에서 받아 온 파라미터를 그대로 payload에 넣는 것이 아니라 변형을 주어서 넣고 싶다면, createAction의 두 번째 함수에 payload를 정의하는 함수를 따로 선언해서 넣어 주면 됩니다.
+<br><br>
+
+```js
+const MY_ACTION = "sample/MY_ACTION";
+const myAction = createAction(MY_ACTION, (text) => `${text}!`);
+const action = myAction("hello world");
+/* 
+  결과:
+  { type: MY_ACTION, payload:'hello world!' }
+*/
+```
+
+<br>
+자, 그럼 이제 todos 모듈의 액션 생성 함수를 다음과 같이 새로 작성해 주세요.
+<br><br>
+
+```js
+import { createAction } from 'redux-actions';
+
+const CHANGE_INPUT = 'todos/CHANGE_INPUT'; // 인풋 값을 변경함
+const INSERT = 'todos/INSERT'; // 새로운 todo를 등록함
+const TOGGLE = 'todos/TOGGLE'; // todo를 체크/체크 해제함
+const REMOVE = 'todos/REMOVE'; // todo를 제거함
+
+export const changeInput = createAction(CHANGE_INPUT, input => input);
+
+let id = 3; // insert가 호출될 때마다 1씩 더해집니다.
+export const insert = createAction(INSERT, text => ({
+  id: id++,
+  text,
+  done: false,
+}));
+
+export const toggle = createAction(TOGGLE, id => id);
+export const remove = createAction(REMOVE, id => id);
+
+(...)
+```
+
+<br>
+insert의 경우 todo 객체를 액션 객체 안에 넣어 주어야 하기 때문에, 두 번째 파라미터에 text를 넣으면 todo 객체가 반환되는 함수를 넣어 주었습니다. 나머지 함수에는 text => text 혹은 id => id와 같은 형태로 파라미터를 그대로 반환하는 함수를 넣었습니다. 이 작업이 필수는 아닙니다. 생략해도 똑같이 작동하지만, 여기서 이 함수를 넣어 줌으로써 코드를 보았을 때 이 액션 생성 함수의 파라미터로 어떤 값이 필요한지 쉽게 파악할 수 있습니다. 
+<br><br>
+액션 생성 함수를 다 작성했으면 handleActions로 리듀서를 재작성해 보겠습니다. createAction으로 만든 액션 생성 함수는 파라미터로 받아 온 값을 객체 안에 넣을 때 원하는 이름으로 넣는 것이 아니라 action.id, action.todo와 같이 action.payload라는 이름을 공통적으로 넣어 주게 됩니다. 그렇기 때문에, 기존의 업데이트 로직에서도 모두 action.payload 값을 조회하여 업데이트 하도록 구현해 주어야 합니다.
+<br><br>
+액션 생성 함수는 액션에 필요한 추가 데이터를 모두 payload라는 이름으로 사용하기 때문에 action.id, action.todo를 조회하는 대신, 모두 공통적으로 action.payload 값을 조회하도록 리듀서를 구현해 주어야 합니다.
+<br><Br>
+
+```js
+import { createAction, handleActions } from 'redux-actions';
+
+
+(...)
+
+
+
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, action) => ({ ...state, input: action.payload }),
+    [INSERT]: (state, action) => ({
+      ...state,
+      todos: state.todos.concat(action.payload),
+    }),
+    [TOGGLE]: (state, action) => ({
+      ...state,
+      todos: state.todos.map(todo =>
+        todo.id === action.payload ? { ...todo, done: !todo.done } : todo,
+      ),
+    }),
+    [REMOVE]: (state, action) => ({
+      ...state,
+      todos: state.todos.filter(todo => todo.id != = action.id),
+    }),
+  },
+  initialState,
+);
+
+
+
+export default todos;
+```
+
+<br>
+모든 추가 데이터 값을 action.payload로 사용하기 때문에 나중에 리듀서 코드를 다시 볼 때 헷갈릴 수 있습니다. 객체 비구조화 할당 문법으로 action 값의 payload 이름을 새로 설정해 주면 action.payload가 정확히 어떤 값을 의미하는지 더 쉽게 파악할 수 있습니다.
+<br><br>
+
+```js
+(...)
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, { payload: input }) => ({ ...state, input }),
+    [INSERT]: (state, { payload: todo }) => ({
+      ...state,
+      todos: state.todos.concat(todo),
+    }),
+    [TOGGLE]: (state, { payload: id }) => ({
+      ...state,
+      todos: state.todos.map(todo =>
+        todo.id = = = id ? { ...todo, done: !todo.done } : todo,
+      ),
+    }),
+    [REMOVE]: (state, { payload: id }) => ({
+      ...state,
+      todos: state.todos.filter(todo => todo.id != = id),
+    }),
+  },
+  initialState,
+);
+
+export default todos;
+```
+
+<br>
+
+### 17.6.2 immer
+
+<br>
+리듀서에서 상태를 업데이트할 때는 불변성을 지켜야 하기 때문에 앞에서는 spread 연산자(...)와 배열의 내장 함수를 활용했습니다. 그러나 모듈의 상태가 복잡해질수록 불변성을 지키기가 까다로워집니다. 따라서 모듈의 상태를 설계할 때는 객체의 깊이가 너무 깊어지지 않도록 주의해야 합니다. 깊은 객체와 깊지 않은 객체를 한번 비교해 볼까요?
+<br><br>
+
+```js
+const deepObject = {
+  modal: {
+    open: false,
+    content: {
+      title: '알림',
+      body: '성공적으로 처리되었습니다.’,
+      buttons: {
+        confirm: '확인',
+        cancel: '취소',
+    },
+  },
+},
+  waiting: false,
+  settings: {
+    theme: 'dark',
+    zoomLevel: 5,
+},
+};
+
+
+const shallowObject = {
+  modal: {
+    open: false,
+    title: '알림',
+    body: '성공적으로 처리되었습니다.’,
+    confirm: '확인',
+    cancel: '취소',
+},
+  waiting: false,
+  theme: 'dark',
+  zoomLevel: 5
+}
+```
+
+<br>
+객체의 깊이가 깊지 않을수록 추후 불변성을 지켜 가면서 값을 업데이트할 때 수월합니다. 하지만 상황에 따라 상태 값들을 하나의 객체 안에 묶어서 넣는 것이 코드의 가독성을 높이는 데 유리하며, 나중에 컴포넌트에 리덕스를 연동할 때도 더욱 편합니다. 객체의 구조가 복잡해지거나 객체로 이루어진 배열을 다룰 경우, immer를 사용하면 훨씬 편리하게 상태를 관리할 수 있습니다.
+<br><Br>
+counter 모듈처럼 간단한 리듀서에 immer를 사용하면 오히려 코드가 더 길어지기 때문에 todos 모듈에 적용해 보겠습니다.
+<br><br>
+
+```js
+import { createAction, handleActions } from 'redux-actions';
+import produce from 'immer';
+
+(...)
+
+const todos = handleActions(
+  {
+    [CHANGE_INPUT]: (state, { payload: input }) =>
+      produce(state, draft => {
+        draft.input = input;
+      }),
+    [INSERT]: (state, { payload: todo }) =>
+      produce(state, draft => {
+        draft.todos.push(todo);
+      }),
+    [TOGGLE]: (state, { payload: id }) =>
+      produce(state, draft => {
+        const todo = draft.todos.find(todo => todo.id = = = id);
+        todo.done = !todo.done;
+      }),
+    [REMOVE]: (state, { payload: id }) =>
+      produce(state, draft => {
+        const index = draft.todos.findIndex(todo => todo.id = = = id);
+        draft.todos.splice(index, 1);
+      }),
+  },
+  initialState,
+);
+
+export default todos;
+```
+
+<br>
+immer를 사용한다고 해서 모든 업데이트 함수에 immer를 적용할 필요는 없습니다. 일반 자바스크립트로 처리하는 것이 더 편할 때는 immer를 적용하지 않아도 됩니다. 예를 들어 위 코드에서 TOGGLE을 제외한 업데이트 함수들은 immer를 쓰지 않는 코드가 오히려 더 짧기 때문에 이전 형태를 유지하는 것도 무방합니다.
 <br>
 
 ---
