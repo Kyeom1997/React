@@ -550,3 +550,148 @@ export default App;
 ```
 
 ![](https://velog.velcdn.com/images/hang_kem_0531/post/1ff8eaff-a3ae-42f1-8a6b-5429460b9d43/image.png)
+
+---
+
+# 3. 컴포넌트
+
+컴포넌트의 기능은 단순한 템플릿 이상이다. 데이터가 주어졌을 때 이에 맞추어 UI를 만들어 주는 것은 물론이고, 라이프사이클 API를 이용하여 컴포넌트가 화면에서 나타날 때, 사라질 때, 변화가 일어날 때 주어진 작업들을 처리할 수 있으며, 임의 메서드를 만들어 특별한 기능을 붙여줄 수 있다.
+
+## 클래스형 컴포넌트
+
+컴포넌트를 선언하는 방식은 두 가지이다. 하나는 **함수형 컴포넌트**이고, 또 다른 하나는 **클래스형 컴포넌트**이다.
+
+```js
+import React, { Component } from "react";
+
+class App extends Component {
+  render() {
+    const name = "react";
+    return <div className="react">{name}</div>;
+  }
+}
+
+export default App;
+```
+
+클래스형 컴포넌트와 함수형 컴포넌트의 차이점은 클래스형 컴포넌트의 경우 state 기능 및 라이프사이클 기능을 사용할 수 있다는 것과 임의 메서드를 정의할 수 있다는 것이다.
+
+클래스형 컴포넌트에서는 render 함수가 꼭 있어야 하고, 그 안에서 보여 주어야 할 JSX를 반환해야 한다.
+
+그렇다면 컴포넌트를 선언할 수 있는 두 가지 방법 중 어느 상황에 함수형 컴포넌트를 사용해야 할까?
+
+함수형 컴포넌트의 장점을 나열해 보면 다음과 같다. 우선 클래스형 컴포넌트보다 선언하기가 훨씬 편하고, 메모리 자원도 클래스형 컴포넌트보다 덜 사용한다.
+
+함수형 컴포넌트의 주요 단점은 state와 라이프사이클 API의 사용이 불가능하다는 점이었지만, 이 단점은 리액트 v16.8 업데이트 이후 Hooks라는 기능이 도입되면서 해결되었다. 리액트 공식 매뉴얼에서는 컴포넌트를 새로 작성할 때 함수형 컴포넌트와 Hooks를 사용하도록 권장하고 있다. 하지만 그렇다고 해서 클래스형 컴포넌트가 사라지는 것은 아니므로 클래스형 컴포넌트의 기능은 꼭 알아두어야 한다.
+
+## 첫 컴포넌트 생성
+
+컴포넌트의 생성 과정은 다음과 같다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/2ed979d2-0b05-4a18-81e7-ae24a30049e1/image.png)
+
+### src 디렉터리에 MyComponent.js 파일 생성
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/d7f30ee6-8592-4212-9580-1689f4570793/image.png)
+
+### 코드 작성하기
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/1a05eb02-6044-4aa7-9be4-ea8a8148cbbf/image.png)
+
+### 모듈 내보내기 및 불러오기
+
+#### 모듈 내보내기
+
+위 작성한 코드에서 맨 아래 코드를 확인해 보자.
+
+```js
+export default MyComponent;
+```
+
+이 코드는 다른 파일에서 이 파일을 import할 때, 위에서 선언한 MyComponent 클래스를 불러오도록 설정한다.
+
+#### 모듈 불러오기
+
+이번에는 App 컴포넌트에서 MyComponent 컴포넌트를 불러와서 사용해 보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/051987c9-62e5-4647-8ab6-2b16ef4b16b1/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/55a80fbb-fb0b-43f3-8a81-d7bb6b0c6560/image.png)
+
+## props
+
+**props**는 properties를 줄인 표현으로 **컴포넌트 속성을 설정할 때 사용**하는 요소이다. props 값은 해당 컴포넌트를 불러와 사용하는 부모 컴포넌트에서 설정할 수 있다.
+
+### JSX 내부에서 props 렌더링
+
+props 값은 컴포넌트 함수의 파라미터로 받아 와서 사용할 수 있다. props를 렌더링할 때는 JSX 내부에서 { } 기호로 감싸주면 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/da8b97df-1bdf-4a8e-8cf1-48969feb6896/image.png)
+
+### 컴포넌트를 사용할 때 props 값 지정하기
+
+App 컴포넌트에서 MyComponent의 props 값을 지정해 보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/313f345f-0f80-41a1-8c22-71715abd213b/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/0791c030-543d-434f-8392-0559d3e5a0b3/image.png)
+
+### props 기본값 설정: defaultProps
+
+위 App 컴포넌트에서 MyComponent의 props 값을 지정하지 않는다면 브라우저에는 '안녕하세요, 제 이름은 입니다.'라는 내용만 보일 것이다. 이렇게 props 값을 따로 지정하지 않았을 때 보여줄 기본값을 설정하려면 defaultProps를 사용하면 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/99afa9f4-3e6f-4bd1-93f0-cfe770e4515e/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/3fd8169b-977e-4940-ae38-d448de21ed70/image.png)
+
+### 태그 사이의 내용을 보여 주는 children
+
+리액트 컴포넌트를 사용할 때 children props를 사용하여 컴포넌트 태그 사이의 내용을 보여줄 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/0d74e656-6232-4bd0-a614-8bcaea14f6f1/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/12b580a8-8660-48db-960c-cd22d31dd1c2/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/57d918bd-8ed7-41ef-8f9d-a393f78de8d8/image.png)
+
+### 비구조화 할당 문법을 통해 props 내부 값 추출하기
+
+현재 MyComponent에서 props 값을 조회할 때마다 props.name, props.children과 같이 props. 이라는 키워드를 앞에 붙여 주고 있다. ES6의 비구조화 할당 문법을 사용하여 내부 값을 바로 추출하는 방법을 알아보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/04a02007-0d69-47cd-b93f-61a61628ba71/image.png)
+
+이렇게 객체에서 값을 추출하는 문법을 비구조화 할당(destructuring assignment)이라고 부른다. 이 문법은 구조 분해 문법이라고도 불리며, 함수의 파라미터 부분에서도 사용할 수 있다. 만약 함수의 파라미터가 객체라면 그 값을 비구조화해서 사용하는 것이다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/31433eb1-6053-4cf9-80ec-2bda587ec3c4/image.png)
+
+### propTypes를 통한 props 검증
+
+컴포넌트의 필수 props를 지정하거나 props의 타입을 지정할 때는 propTypes를 사용한다. 컴포넌트의 propTypes를 지정하는 방법은 defaultProps를 설정하는 것과 비슷하다. 우선 propTypes를 사용하려면 코드 상단에 import 구문을 사용하여 불러와야 한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/a5d52f86-9cf8-4413-8012-f3142915516b/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/830b3e8b-83ce-49f9-b80a-27eff3a344bb/image.png)
+
+이렇게 설정해 주면 name 값은 무조건 문자열(string) 형태로 전달해야 된다는 것을 의미한다. 만약 컴포넌트에 설정한 props가 propTypes에서 지정한 형태와 일치하지 않는다면 브라우저 개발자 도구의 Console 탭에 다음과 같은 결과가 나타난다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6a1e1e55-8cf5-4eb1-bde0-03144fb6652c/image.png)
+
+#### isRequired를 사용하여 필수 propTypes 설정
+
+propTypes를 지정하지 않았을 때 경고 메시지를 띄워주려면, propTypes를 지정할 때 뒤에 isRequired를 붙여 주면 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/45d23b0e-ad22-42bd-a9ba-fcbafe494260/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/7c2088d0-49e2-426d-9a06-e639087404a0/image.png)
+
+#### [더 많은 PropTypes 종류](https://github.com/facebook/prop-types)
+
+### 클래스형 컴포넌트에서 props 사용하기
+
+클래스형 컴포넌트에서 props를 사용할 때는 render 함수에서 this.props를 조회하면 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/709e2a2d-a712-43ff-bb5f-4d981a9d8e7d/image.png)
+
+> #### defaultProps와 propTypes는 꼭 사용해야 할까? <br>
+>
+> 이 두 가지 설정은 컴포넌트의 필수 사항이 아니므로 꼭 사용할 필요는 없다. 하지만 큰 규모의 프로젝트를 진행할 경우, 특히 다른 개발자들과 협업할 경우에는 해당 컴포넌트에 어떤 props가 필요한지 쉽게 알 수 있어 개발 능률이 좋아질 수 있다.
