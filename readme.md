@@ -4,6 +4,10 @@
 
 > 해당 카테고리의 블로그 포스트들은 velopert님의 ['리액트를 다루는 기술'](https://thebook.io/080203/) 서적을 참고하여 작성했습니다.
 
+---
+
+# 1. 리액트 시작
+
 ## 왜 리액트인가?
 
 그렇다면, 오늘날 대부분의 프론트엔드 개발자들은 왜 리액트를 선택했을까? 최근 몇 년간 전 세계 개발자들은 자바스크립트에 뜨겁게 열광했다. 자바스크립트는 한때 단순히 브라우저에서 간단한 연산을 하거나, 시각적인 효과를 주는데에 그쳤었지만, 현재는 웹 애플리케이션, 더 나아가 서버 사이드는 물론 모바일, 데스크톱 애플리케이션에도 활약중이다.
@@ -49,7 +53,6 @@
 
 리액트에서는 특정 부분이 어떻게 생길지 정하는 선언체가 있는데, 이를 **컴포넌트(Component)**라고 한다. 컴포넌트는 재사용이 가능한 API로 수많은 기능들을 내장하고 있으며, 컴포넌트 하나에서 해당 컴포넌트의 생김새와 작동 방식을 정의한다.
 
-
 #### 초기 렌더링
 
 렌더링이란, 사용자 화면에 뷰를 보여 주는 것을 뜻한다. 어떤 UI 관련 프레임워크, 라이브러리를 사용하든지 간에 맨 처음 어떻게 보일지를 정하는 초기 렌더링이 필요한데, 리액트에서는 이를 다루는 render 함수가 있다.
@@ -82,8 +85,8 @@ render() { ... }
 리액트의 주요 특징 중 하나는 Virtual DOM을 사용하는 것이다. DOM은 Document Object Model의 약어로, 객체로 문서 구조를 표현하는 방법이다.
 
 > **DOM은 과연 느릴까?** <br>
-DOM에게는 치명적인 문제점이 하나 있는데, 바로 동적 UI에 최적화되어 있지 않다는 것이다. HTML은 자체적으로는 정적이지만, 자바스크립트를 사용하여 동적으로 구동된다. 최근의 웹 애플리케이션은 그 규모가 몹시 크기 때문에 DOM에 직접 접근하여 변화를 주다 보면 성능 이슈가 조금씩 발생하기 시작한다. 일부 문서에서는 이를 두고 "자바스크립트 엔진은 매우 빠르지만, DOM은 느리다"라고 표현하는데, 이는 정확한 말은 아니다. <br>
-DOM 자체를 읽고 쓸 때의 성능은 자바스크립트 객체를 처리할 때의 성능과 비교하여 다르지 않다. 단, 웹 브라우저 단에서 DOM에 변화가 일어나면 웹 브라우저가 CSS를 다시 연산하고, 레이아웃을 구성하고, 페이지를 리페인트하는 과정에서 시간이 허비되는 것이다. 그렇기 때문에 리액트는 Virtual DOM 방식을 사용하여 DOM 업데이트를 추상화함으로써 DOM 처리 횟수를 최소화하고 효율적으로 진행한다.
+> DOM에게는 치명적인 문제점이 하나 있는데, 바로 동적 UI에 최적화되어 있지 않다는 것이다. HTML은 자체적으로는 정적이지만, 자바스크립트를 사용하여 동적으로 구동된다. 최근의 웹 애플리케이션은 그 규모가 몹시 크기 때문에 DOM에 직접 접근하여 변화를 주다 보면 성능 이슈가 조금씩 발생하기 시작한다. 일부 문서에서는 이를 두고 "자바스크립트 엔진은 매우 빠르지만, DOM은 느리다"라고 표현하는데, 이는 정확한 말은 아니다. <br>
+> DOM 자체를 읽고 쓸 때의 성능은 자바스크립트 객체를 처리할 때의 성능과 비교하여 다르지 않다. 단, 웹 브라우저 단에서 DOM에 변화가 일어나면 웹 브라우저가 CSS를 다시 연산하고, 레이아웃을 구성하고, 페이지를 리페인트하는 과정에서 시간이 허비되는 것이다. 그렇기 때문에 리액트는 Virtual DOM 방식을 사용하여 DOM 업데이트를 추상화함으로써 DOM 처리 횟수를 최소화하고 효율적으로 진행한다.
 
 #### What is Virtual DOM?
 
@@ -98,8 +101,8 @@ Virtual DOM을 사용하면 실제 DOM에 접근하여 조작하는 대신, 이�
 3. 바뀐 부분만 실제 DOM에 적용한다.
 
 > **오해** <br>
-Virtual DOM을 사용한다고 해서 사용하지 않을 때와 비교하여 무조건 빠른 것은 아니다. 리액트를 사용하지 않아도 코드 최적화를 열심히 하면 DOM 작업이 느려지는 문제를 개선할 수 있고, 또 작업이 매우 간단할 때는 오히려 리액트를 사용하지 않는 편이 더 나은 성능을 보이기도 한다. <br>
-리액트와 Virtual DOM이 언제나 제공할 수 있는 것은 바로 업데이트 처리 간결성이다. UI를 업데이트하는 과정에서 생기는 복잡함을 모두 해소하고, 더욱 쉽게 업데이트에 접근할 수 있다.
+> Virtual DOM을 사용한다고 해서 사용하지 않을 때와 비교하여 무조건 빠른 것은 아니다. 리액트를 사용하지 않아도 코드 최적화를 열심히 하면 DOM 작업이 느려지는 문제를 개선할 수 있고, 또 작업이 매우 간단할 때는 오히려 리액트를 사용하지 않는 편이 더 나은 성능을 보이기도 한다. <br>
+> 리액트와 Virtual DOM이 언제나 제공할 수 있는 것은 바로 업데이트 처리 간결성이다. UI를 업데이트하는 과정에서 생기는 복잡함을 모두 해소하고, 더욱 쉽게 업데이트에 접근할 수 있다.
 
 ### 기타 특징
 
@@ -127,4 +130,423 @@ $ yarn start # 또는 npm start
 
 이러한 화면이 나타난다면 성공적으로 리액트 개발을 위한 준비를 마친 것이다!
 
+---
 
+# 2. JSX
+
+## 코드 이해하기
+
+```js
+import React from "react";
+import logo from "./logo.svg";
+import "./App.css";
+
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
+    </div>
+  );
+}
+
+export default App;
+```
+
+리액트로 만든 프로젝트의 src/App.js 파일을 처음 열어본다면, 위와 같은 코드들이 이미 생성되어 있는 것을 확인할 수 있다. 그러면 이 코드들을 하나씩 이해해 보자.
+
+```js
+import React from "react";
+```
+
+이 코드는 리액트를 불러와서 사용할 수 있게 해준다. CRA(create-react-app)으로 리액트 프로젝트를 생성할 때, node_modules라는 디렉터리도 함께 생성이 되는데, 여기에 react 모듈이 설치된다. 이 모듈을 import 구문을 통해 불러와서 사용할 수 있는 것이다.
+
+이렇게 모듈을 불러와서 사용하는 것은 브라우저에는 없던 기능이다. 이러한 기능을 브라우저에서도 사용하기 위해 번들러(bundler)를 사용하는데, 번들(Bundle)은 파일을 묶듯이 연결하는 것을 뜻한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/200c5c23-fc91-4d4c-8edb-0835b1f71c05/image.png)
+
+대표적인 번들러로 웹팩, Parcel, browserify 라는 도구들이 있으며, 리액트 프로젝트에서는 주로 웹팩을 사용한다. 번들러 도구를 사용하면 import(또는 require)로 모듈을 불러왔을 때 불러온 모듈을 모두 합쳐서 하나의 파일을 생성해 준다.
+
+리액트를 불러오는 코드 하단에는 다음과 같이 SVG 파일과 CSS 파일을 import 하는 코드가 있다.
+
+```js
+import logo from "./logo.svg";
+import "./App.css";
+```
+
+웹팩을 사용하면 SVG 파일과 CSS 파일도 불러와서 사용할 수 있다. 이렇게 파일들을 불러오는 것은 웹팩의 로더(loader)라는 기능이 담당한다. 로더는 여러가지 종류가 있는데, babel-loader는 자바스크립트 파일들을 불러오면서 최신 자바스크립트 문법으로 작성된 코드들을 바벨이라는 도구를 사용하여 ES5 문법으로 변환해 준다.
+
+> #### 최신 자바스크립트로 작성된 코드를 왜 변환할까? <br>
+>
+> 최신 자바스크립트 문법을 ES5 형태로 변환하는 것은 구버전 웹 브라우저와 호환하기 위해서이다. 또한, 리액트 컴포넌트에서 사용하는 JSX라는 문법도 정식 자바스크립트 문법이 아니므로 ES5 형태의 코드로 변환해야 환다.
+
+```js
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
+    </div>
+  );
+}
+```
+
+이 코드는 App이라는 컴포넌트를 만들어 준다. function 키워드를 사용하여 컴포넌트를 만들었기 때문에, 이러한 컴포넌트를 함수형 컴포넌트라고 부른다. 함수에서 반환하는 내용을 보면 마치 HTML 구문 같지만, 이러한 코드들은 JSX라고 부른다.
+
+---
+
+## What is JSX?
+
+JSX는 자바스크립트의 확장 문법이며 XML과 매우 비슷하게 생겼다. 이런 형식으로 작성한 코드는 브라우저에서 실행되기 이전에 코드가 번들링되는 과정에서 바벨을 사용하여 일반 자바스크립트 형태의 코드를 변환된다.
+
+```js
+function App() {
+  return (
+    <div>
+      Hello <b>react</b>
+    </div>
+  );
+}
+```
+
+이렇게 작성된 코드는 다음과 같이 변환된다.
+
+```js
+function App() {
+return React.createElement(“div“, null, “Hello “,
+React.createElement(“b“, null, “react“));
+}
+
+```
+
+만일 컴포넌트를 렌더링할 때마다 위와 같이 매번 React.createElement 함수를 사용해야 한다면 매우 불편하기 때문에, JSX를 사용하여 편하게 UI를 렌더링하는 것이다.
+
+## JSX 문법
+
+JSX를 사용하려면 몇 가지 규칙을 준수해야 한다.
+
+### 감싸인 요소
+
+**컴포넌트에 여러 요소가 있다면 반드시 부모 요소 하나로 감싸야 한다. **
+
+```js
+import React from 'react';
+
+function App() {
+  return (
+    <h1>리액트 안녕!</h1>
+    <h2>잘 작동하니?</h2>
+  )
+}
+
+export default App;
+```
+
+이러한 형태의 코드는 제대로 작동하지 않고 다음과 같은 오류가 나타난다.
+
+```
+Failed to compile.
+
+./src/App.js
+Line 6:  Parsing error: Adjacent JSX elements must be wrapped in an enclosing tag.
+Did you want a JSX fragment <>…</>?
+
+4 |   return (
+5 |     <h1>리액트 안녕!</h1>
+> 6 |     <h2>잘 작동하니?</h2>
+  |     ^
+7 |   )
+8 | }
+9 |
+```
+
+이 오류는 요소 여러 개가 부모 요소 하나에 의하여 감싸져 있지 않기 때문에 발생한 오류이다. 다음과 같이 코드를 작성하여 해결할 수 있다.
+
+```js
+import React from "react";
+
+function App() {
+  return (
+    <div>
+      <h1>리액트 안녕!</h1>
+      <h2>잘 작동하니?</h2>
+    </div>
+  );
+}
+
+export default App;
+```
+
+리액트 컴포넌트에서 요소 여러 개를 하나의 요소로 꼭 감싸주어야 하는 이유는, Virtual DOM에서 컴포넌트 변화를 감지해 낼 때 효율적으로 비교할 수 있도록 **컴포넌트 내부는 하나의 DOM 트리로 이루어져야 한다는 규칙**이 있기 때문이다.
+
+여기서 꼭 div 요소를 사용하고 싶지 않을 수도 있는데, 그런 경우에는 리액트 v16 이상부터 도입된 Fragment라는 기능을 사용하면 된다.
+
+```js
+import React, { Fragment } from "react";
+
+function App() {
+  return (
+    <Fragment>
+      <h1>리액트 안녕!</h1>
+      <h2>잘 작동하니?</h2>
+    </Fragment>
+  );
+}
+
+export default App;
+```
+
+Fragment는 다음과 같은 형태로도 표현할 수 있다.
+
+```js
+import React from "react";
+
+function App() {
+  return (
+    <>
+      <h1>리액트 안녕!</h1>
+      <h2>잘 작동하니?</h2>
+    </>
+  );
+}
+
+export default App;
+```
+
+### 자바스크립트 표현
+
+자바스크립트 표현식을 작성하려면 JSX 내부에서 코드를 `{ }`로 감싸면 된다.
+
+```js
+import React from "react";
+
+function App() {
+  const name = "리액트";
+  return (
+    <>
+      <h1>{name} 안녕!</h1>
+      <h2>잘 작동하니?</h2>
+    </>
+  );
+}
+
+export default App;
+```
+
+### if 문 대신 조건부 연산자
+
+JSX 내부의 자바스크립트 표현식에서 if 문은 사용할 수 없다. 하지만 조건에 따라 다른 내용을 렌더링해야 할 때는 JSX 밖에서 if 문을 사용하여 사전에 값을 설정하거나, `{ }` 안에 삼항 연산자를 사용하면 된다.
+
+```js
+import React from "react";
+
+function App() {
+  const name = "리액트";
+  return (
+    <div>
+      {name === "리액트" ? <h1>리액트입니다.</h1> : <h2>리액트가 아닙니다.</h2>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+### AND 연산자(&&)를 사용한 조건부 렌더링
+
+```js
+import React from "react";
+
+function App() {
+  const name = "리왝트";
+  return <div>{name === "리액트" && <h1>리액트입니다.</h1>}</div>;
+}
+
+export default App;
+```
+
+### undefined를 렌더링하지 않기
+
+리액트 컴포넌트에서는 함수에서 undefined만 반환하여 렌더링하는 상황을 만들면 안된다.
+
+```js
+import React from "react";
+import "./App.css";
+
+function App() {
+  const name = undefined;
+  return name;
+}
+
+export default App;
+```
+
+코드를 저장한 후 브라우저를 확인해 보면 다음과 같은 오류를 볼 수 있다.
+
+```
+App(…): Nothing was returned from render. This usually means a return statement is
+missing. Or, to render nothing, return null.
+```
+
+어떤 값이 undefined일 수도 있다면, OR(||) 연산자를 사용하면 해당 값이 undefined일 때 사용할 값을 지정할 수 있으므로 간단하게 오류를 방지할 수 있다.
+
+```js
+import React from "react";
+import "./App.css";
+
+function App() {
+  const name = undefined;
+  return name || "값이 undefined입니다.";
+}
+
+export default App;
+```
+
+한편, JSX 내부에서 undefiend를 렌더링하는 것은 괜찮다.
+
+### 인라인 스타일링
+
+리액트에서 DOM 요소에 스타일을 적용할 때는 문자열 형태로 넣는 것이 아니라 객체 형태로 넣어 주어야 한다. 케밥 케이스(kebab-case)로 작성된 속성들은 카멜 케이스(camelCase)로 작성해야 한다.
+
+```js
+import React from "react";
+
+function App() {
+  const name = "리액트";
+  const style = {
+    // background-color는 backgroundColor와 같이 -가 사라지고 카멜 표기법으로 작성
+    backgroundColor: "black",
+    color: "aqua",
+    fontSize: "48px", // font-size -> fontSize
+    fontWeight: "bold", // font-weight -> fontWeight
+    padding: 16, // 단위를 생략하면 px로 지정
+  };
+  return <div style={style}>{name} </div>;
+}
+
+export default App;
+```
+
+style 객체를 미리 선언하지 않고 바로 style 값을 지정하고 싶다면 다음과 같이 작성하면 된다.
+
+```js
+import React from "react";
+
+function App() {
+  const name = "리액트";
+  return (
+    <div
+      style={{
+        backgroundColor: "black",
+        color: "aqua",
+        fontSize: "48px",
+        fontWeight: "bold",
+        padding: 16,
+      }}
+    >
+      {name}
+    </div>
+  );
+}
+
+export default App;
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/eb211632-f527-4f16-9a68-49152584e099/image.png)
+
+### class 대신 className
+
+일반 HTML에서 CSS 클래스를 사용할 때는 `<div class="myClass"></div>`와 같이 class라는 속성을 사용했지만, JSX에서는 class가 아닌 className으로 설정해 주어야 한다.
+
+```js
+import "./App.css";
+
+function App() {
+  const name = "리액트";
+  return <div className="react">{name}</div>;
+}
+
+export default App;
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/9ee8eacf-e77c-4dc2-9b09-e1cb8e04fdbf/image.png)
+
+### 꼭 닫아야 하는 태그
+
+HTML에서는 br이나 input 태그와 같은 태그들은 태그를 닫지 않은 상태로 코드를 작성해도 정상적으로 작동한다. 하지만 JSX에서는 태그를 닫지 않으면 오류가 발생한다. 그렇기 때문에 다음과 같이 input 태그를 닫아주어야 한다.
+
+```js
+import React from "react";
+import "./App.css";
+
+function App() {
+  const name = "리액트";
+  return (
+    <>
+      <div className="react">{name}></div>
+      <input></input>
+    </>
+  );
+}
+
+export default App;
+```
+
+태그 사이에 별도의 내용이 들어가지 않는 경우에는 태그를 선언하면서 동시에 닫는 self-closing 태그를 사용할 수 있다.
+
+```html
+<input />
+```
+
+### 주석
+
+JSX 내부에서 주석을 작성할 때는 `{/* ... */}` 와 같은 형식으로 작성한다. 시작 태그를 여러 줄로 작성할 때는 그 내부에서 `// ...` 과 같은 형태의 주석도 작성할 수 있다.
+
+```jsx
+import React from "react";
+import "./App.css";
+
+function App() {
+  const name = "리액트";
+  return (
+    <>
+      {/* 주석 */}
+      <div
+        className="react" // 시작 태그를 여러 줄로 작성하게 된다면 여기에 주석을 작성할 수 있다.
+      >
+        {name}
+      </div>
+      // 하지만 이런 주석이나 /* 이런 주석은 페이지에 그대로 나타나게 된다. */
+      <input />
+    </>
+  );
+}
+
+export default App;
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/1ff8eaff-a3ae-42f1-8a6b-5429460b9d43/image.png)
