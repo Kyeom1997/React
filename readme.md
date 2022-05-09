@@ -695,3 +695,189 @@ propTypes를 지정하지 않았을 때 경고 메시지를 띄워주려면, pro
 > #### defaultProps와 propTypes는 꼭 사용해야 할까? <br>
 >
 > 이 두 가지 설정은 컴포넌트의 필수 사항이 아니므로 꼭 사용할 필요는 없다. 하지만 큰 규모의 프로젝트를 진행할 경우, 특히 다른 개발자들과 협업할 경우에는 해당 컴포넌트에 어떤 props가 필요한지 쉽게 알 수 있어 개발 능률이 좋아질 수 있다.
+
+## State
+
+리액트에서 state는 컴포넌트 내부에서 바뀔 수 있는 값을 의미한다. props는 컴포넌트가 사용되는 과정에서 부모 컴포넌트가 설정하는 값이며, 컴포넌트 자신은 해당 props를 읽기 전용으로만 사용할 수 있다. 그렇기 때문에 props를 바꾸려면 부모 컴포넌트에서 바꾸어 주어야 한다.
+
+리액트에는 두 가지 종류의 state가 있다. 하나는 클래스형 컴포넌트가 지니고 있는 state이고, 다른 하나는 함수형 컴포넌트에서 useState라는 함수를 통해 사용하는 state다.
+
+## 클래스형 컴포넌트의 state
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6a1d9ca8-64f2-4c90-b120-01cbf0a837f1/image.png)
+
+위 파일에서 각 코드가 어떤 역할을 하는지 알아보자.
+
+컴포넌트에 state를 설정할 때는 다음과 같이 **constructor 메서드**를 작성하여 설정한다.
+
+```js
+constructor(props) {
+  super(props);
+  // state의 초깃값 설정하기
+  this.state = {
+    number: 0
+  };
+}
+```
+
+constructor 메서드는 컴포넌트의 생성자 메서드이다. 클래스형 컴포넌트에서 constructor를 작성할 때는 반드시 **super(props)**를 호출해 주어야 한다. 이 함수가 호출되면 현재 클래스형 컴포넌트가 상속받고 있는 리액트의 Component 클래스가 지닌 생성자 함수를 호출해 준다.
+
+그 다음에는 this.state 값에 초기값을 설정해 주었다. 컴포넌트의 state는 **객체 형식**이어야 한다.
+
+이제 render 함수를 확인해 보자.
+
+```js
+render() {
+  const { number } = this.state; // state를 조회할 때는 this.state로 조회
+  return (
+      <div>
+        <h1>{number}</h1>
+        <button
+        // onClick을 통해 버튼이 클릭되었을 때 호출할 함수를 지정
+        onClick={() => {
+          // this.setState를 사용하여 state에 새로운 값을 넣을 수 있다.
+          this.setState({ number: number + 1 });
+          }}
+        >
+          +1
+        </button>
+      </div>
+    );
+  }
+```
+
+render 함수에서 현재 state를 조회할 때는 this.state를 조회하면 된다. 그리고 button 안에 onClick이라는 값을 props로 넣어 주었는데, 이는 버튼이 클릭될 때 호출시킬 함수를 설정할 수 있게 해준다. 이를 **이벤트를 설정**한다고 한다.
+
+함수 내부에서는 **this.setState**라는 함수를 사용했다. 이 함수는 state 값을 바꿀 수 있게 해준다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/82b3f846-c844-4f1e-826f-5fe654b9101d/image.gif)
+
+### state 객체 안에 여러 값이 있을 때
+
+state 객체 안에는 여러 값이 있을 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/f0a44322-2c0a-4c03-96c0-7355cb828f49/image.png)
+
+현재 state 안에 fixedNumber라는 또 다른 값을 추가해 주었다. 그렇지만 this.setState 함수를 사용할 때 인자로 전달되는 개체 내부에 fixedNumber를 넣어 주지는 않았다. this.setState 함수는 인자로 전달된 객체 안에 들어 있는 값만 바꾸어 준다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/d113f2c7-43c6-4785-b60c-6bcba69b7ed4/image.gif)
+
+### state를 constructor에서 꺼내기
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/1e8a065a-e726-4b6e-9a49-2269e3aa62f3/image.png)
+
+이렇게 하면 constructor 메서드를 선언하지 않고도 state 초깃값을 설정할 수 있다.
+
+### this.setState에 객체 대신 함수 인자 전달하기
+
+this.setState를 사용하여 state 값을 업데이트할 때는 상태가 비동기적으로 업데이트된다. 만약 다음과 같이 onClick에 설정한 함수 내부에서 this.setState를 두 번 호출하면 어떻게 될까?
+
+```js
+onClick={() => {
+  this.setState({ number: number + 1});
+  this.setState({ number: this.state.number + 1});
+}}
+```
+
+코드를 위와 같이 작성하면 this.setState를 두 번 사용하는 것임에도 불구하고 버튼을 클릭할 때 숫자가 1씩 더해진다. this.setState를 사용한다고 해서 state 값이 바로 바뀌지는 않기 때문이다.
+
+이에 대한 해결책은 this.setState를 사용할 때 객체 대신에 함수를 인자로 넣어 주는 것이다.
+
+```js
+this.setState((prevState, props) => {
+  return {
+    // 업데이트하고 싶은 내용
+  };
+});
+```
+
+여기서 prevState는 기존 상태이고, props는 현재 지니고 있는 props를 가리킨다. 만약 업데이트하는 과정에서 props가 필요하지 않다면 생략해도 된다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/99473182-0c25-4d0a-b13e-af7269259c8a/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/f5c6cb92-2a97-4708-95ce-3ab487e178f5/image.gif)
+
+### this.setState가 끝난 후 특정 작업 실행하기
+
+setState를 사용하여 값을 업데이트하고 난 다음에 특정 작업을 하고 싶을 때는 setState의 두 번째 파라미터로 콜백(callback) 함수를 등록하여 작업을 처리할 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6dd8af14-b58e-441c-b115-978f2da489f8/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/1ebc0179-60f5-472b-8510-be4a521bb280/image.gif)
+
+## 함수형 컴포넌트에서 useState 사용하기
+
+리액트 v16.8 이후부터는 useState라는 함수를 사용하여 함수형 컴포넌트에서도 state를 사용할 수 있게 되었다. 이 과정에서 Hooks라는 것을 사용하게 되는데, Hooks는 나중에 다른 포스팅에서 더 자세히 다뤄보겠다.
+
+### 배열 비구조화 할당
+
+Hooks를 사용하기 전에 배열 비구조화 할당이라는 것을 알아보자. 배열 비구조화 할당은 이전 객체 비구조화 할당과 비슷하다. 즉, 배열 안에 들어 있는 값을 쉽게 추출할 수 있도록 해주는 문법이다.
+
+```js
+const array = [1, 2];
+const one = array[0];
+const two = array[1];
+```
+
+```js
+const array = [1, 2];
+const [one, two] = array;
+```
+
+### useState 사용하기
+
+배열 비구조화 할당 문법을 알고 나면 useState 사용 방법을 쉽게 이해할 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/2cd07c0a-236a-49eb-928d-fedd55a97e4b/image.png)
+
+useState 함수의 인자에는 상태의 초깃값을 넣어 준다. 클래스형 컴포넌트에서의 state 초깃값은 객체 형태를 넣어 주어야 한다고 했지만, useState에서는 반드시 객체가 아니어도 상관없다. 값의 형태는 자유이며, 숫자일 수도, 문자열일 수도, 객체일 수도, 배열일 수도 있다.
+
+함수를 호출하면 배열이 반환되는데, 배열의 첫 번째 원소는 현재 상태이고, 두 번째 원소는 상태를 바꾸어 주는 함수이다. 이 함수를 세터(Setter) 함수라고 부른다. 그리고 배열 비구조화 할당을 통해 이름을 자유롭게 정해줄 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/7963b259-8945-4868-bc96-2f70a6d9dce6/image.gif)
+
+### 한 컴포넌트에서 useState 여러 번 사용하기
+
+useState는 한 컴포넌트에서 여러 번 사용해도 상관없다. 또 다른 상태를 useState로 한번 관리해 보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/c08c7147-7879-4ade-b9b0-c448463abfba/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/5fbcc5f7-bb95-45bd-babc-a1d5e8734bdb/image.gif)
+
+## State를 사용할 때 주의사항
+
+클래스형 컴포넌트든 함수형 컴포넌트든 state를 사용할 때는 주의해야 할 사항이 있다. 바로 state 값을 바꾸어야 할 때는 setState 혹은 useState를 통해 전달받은 세터 함수를 사용해야 된다는 것이다.
+
+예를 들어 다음 코드는 잘못된 코드이다.
+
+```js
+// 클래스형 컴포넌트에서
+this.state.number = this.state.number + 1;
+this.state.array = this.array.push(2);
+this.state.object.value = 5;
+
+// 함수형 컴포넌트에서
+const [object, setObject] = useState({ a: 1, b: 1 });
+object.b = 2;
+```
+
+그렇다면 배열이나 객체를 업데이트해야 할 때는 어떻게 해야 할까? 이런 상황에서는 배열이나 객체 사본을 만들고 그 사본에 값을 업데이트한 후, 그 사본의 상태를 setState 혹은 세터 함수를 통해 업데이트 해야 한다.
+
+```js
+// 객체 다루기
+const object = { a: 1, b: 2, c: 3};
+const nextObject = { ...object, b: 2}; // 사본을 만들어서 b 값만 덮어 쓰기
+
+// 배열 다루기
+const array = [
+  { id: 1, value: true },
+  { id: 2, value: true },
+  { id: 3, value: false }
+];
+let nextArray = array.concat({ id: 4 }); // 새 항목 추가
+nextArray.filter(item => item.id !== 2); // id가 2인 항목 제거
+nextArray.map(item => item.id === 1 ? { ...item, value: false } : item));
+// id가 1인 항목의 value를 false로 설정
+```
+
+객체에 대한 사본을 만들 때는 spread 연산자라 불리는 ...을 사용하여 처리하고, 배열에 대한 사본을 만들 때는 배열의 내장 함수들을 활용한다.
