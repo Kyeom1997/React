@@ -881,3 +881,359 @@ nextArray.map(item => item.id === 1 ? { ...item, value: false } : item));
 ```
 
 객체에 대한 사본을 만들 때는 spread 연산자라 불리는 ...을 사용하여 처리하고, 배열에 대한 사본을 만들 때는 배열의 내장 함수들을 활용한다.
+
+---
+
+# Event Handling
+
+이벤트(Event)란, 사용자가 웹 브라우저에서 DOM 요소들과 상호 작용하는 것을 뜻한다. 예를 들어, 버튼에 마우스 커서를 올렸을 때는 onmouseover 이벤트를 실행하고, 클릭했을 때는 onclick 이벤트를 실행한다. 리액트에서 이벤트를 다루는 것은 HTML에서 이벤트를 다루는 것과 비슷하면서도 좀 다르다.
+
+## 리액트의 이벤트 시스템
+
+리액트의 이벤트 시스템은 웹 브라우저의 HTML 이벤트와 인터페이스가 동일하기 때문에 사용법이 꽤 비슷하지만, 주의해야 할 몇 가지 사항이 있다.
+
+### 이벤트를 사용할 때 주의 사항
+
+1. **이벤트 이름은 카멜 표기법으로 작성한다.**
+   예를 들어 HTML의 onclick은 리액트에서 **onClick**으로, onkeyup은 **onKeyUp**으로 작성해야 한다.
+
+2. **이벤트에 실행할 자바스크립트 코드를 전달하는 것이 아니라, 함수 형태의 값을 전달한다.**
+   HTML에서 이벤트를 설정할 때는 큰따옴표 안에 실행할 코드를 넣었지만, 리액트에서는 함수 형태의 객체를 전달한다.
+
+3. **DOM 요소에만 이벤트를 설정할 수 있다.**
+   즉 div, button, input, form, span 등의 DOM 요소에는 이벤트를 설정할 수 있지만, 우리가 직접 만든 컴포넌트에는 이벤트를 자체적으로 설정할 수 없다.
+
+### 이벤트 종류
+
+[리액트 매뉴얼](https://reactjs.org/docs/events.html)
+
+---
+
+## 이벤트 핸들링 익히기
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/57bdf3aa-4264-4485-856d-d92bbc99ef3f/image.png)
+
+### 컴포넌트 생성 및 불러오기
+
+#### 컴포넌트 생성
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/1ea2c770-636d-49b2-8d7f-15d9ae561be4/image.png)
+
+먼저 클래스형 컴포넌트로 작성하여 기능을 구현해 보고, 나중에 함수형 컴포넌트로도 구현해 보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/926d52e9-4ca9-4b20-a09a-5dab2453c524/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/ebc4937a-35fd-4b0f-8c49-cf142ced3ef3/image.png)
+
+### onChange 이벤트 핸들링하기
+
+#### onChange 이벤트 설정
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/e00a5264-4809-4e40-b452-35508fcafc0a/image.png)
+
+EventPractice 컴포넌트에 input 요소를 렌더링하는 코드와 해당 요소에 onChange 이벤트를 설정하는 코드를 작성한다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/17ba4dc0-317e-4ea2-a0f1-8fc465e5dff3/image.gif)
+
+이벤트 객체가 콘솔에 나타나는 모습을 볼 수 있다. 여기서 콘솔에 기록되는 e 객체는 SyntheticEvent로 **웹 브라우저의 네이티브 이벤트를 감싸는 객체**이다.
+
+> #### SyntheticEvent (합성 이벤트)<br>
+>
+> SyntheticEvent는 객체로 모든 브라우저에서 이벤트를 동일하게 처리하기 위한 Wrapper 객체이다. Wrapping 이란, 기본 기능을 감싸는 새로운 기능을 만드는 것을 의미한다. <br><br> React는 Element가 처음 렌더링될 때 이벤트 리스너를 제공하여 처리하는데, 이때 리스너와 대응되는 이벤트 핸들러 함수는 모든 브라우저에서 이벤트를 동일하게 처리하기 위한 이벤트 래퍼를 전달받아야 하며, React에서 제공하는 이 이벤트 래퍼가 바로 **SyntheticEvent** 객체인 것이다.
+
+SyntheticEvent는 네이티브 이벤트와 달리 이벤트가 끝나고 나면 이벤트가 초기화되므로 정보를 참조할 수 없다. 그렇기 때문에 비동기적으로 이벤트 객체를 참조할 일이 있다면 e.persist() 함수를 호출해 주어야 한다.
+
+예를 들어 onChange 이벤트가 발생할 때, 인풋값이 변하는 것을 기록하고 싶다면 e.target.value를 활용하면 된다.
+
+```js
+onChange = {
+  (e) => {
+    console.log(e.target.value);
+  }
+}
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/56d10ed4-9ae1-4b04-86f5-5499d5603812/image.gif)
+
+#### state에 input 값 담기
+
+생성자 메서드인 constructor에서 state 초깃값을 설정하고, 이벤트 핸들링 함수 내부에서 this.setState 메서드를 호출하여 state를 업데이트한다. 그리고 input의 value 값을 state에 있는 값으로 설정하면 state에 input 값을 담을 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/41ff0f89-1467-47b2-88ff-579baa4375b8/image.png)
+
+#### 버튼을 누를 때 comment 값을 공백으로 설정
+
+정말로 입력한 값이 state에 잘 들어갔는지, 인풋에서 그 값을 제대로 반영하는지 검증해 보도록 하자. input 요소 코드 아래쪽에 button을 하나 만들고, 클릭 이벤트가 발생하면 현재 comment 값을 메시지 박스로 띄운 후 comment 값을 공백으로 설정하였다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/80d54f7d-cef7-4261-9f79-092abe5e1acb/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6d861260-9fcf-48cc-ba8b-ec27b9b345cb/image.gif)
+
+### 임의 메서드 만들기
+
+이벤트를 처리할 때 렌더링을 하는 동시에 함수를 만들어서 전달해 주는 방식 말고도 함수를 미리 준비하여 전달하는 방법도 있다. 성능상으로는 차이가 거의 없지만, 가독성은 훨씬 높다. 앞서 onChange와 onClick에 전달한 함수를 따로 빼내서 컴포넌트 임의 메서드를 만들어보자.
+
+#### 기본 방식
+
+```js
+import React, { Component } from "react";
+
+class EventPractice extends Component {
+  state = {
+    message: "",
+  };
+
+  constructor(props) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+  } // this와 메서드 바인딩
+
+  handleChange(e) {
+    this.setState({
+      message: e.target.value,
+    });
+  }
+
+  handleClick() {
+    alert(this.state.message);
+    this.setState({
+      message: "",
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>이벤트 연습</h1>
+        <input
+          type="text"
+          name="message"
+          placeholder="아무거나 입력해 보세요"
+          value={this.state.message}
+          onChange={this.handleChange}
+        />
+        <button onClick={this.handleClick}>확인</button>
+      </div>
+    );
+  }
+}
+
+export default EventPractice;
+```
+
+함수가 호출될 때 this는 호출부에 따라 결정되므로, 클래스의 임의 메서드가 특정 HTML 요소의 이벤트에 등록되는 과정에서 메서드와 this의 관계가 끊어져 버린다. 이 때문에 임의 메서드가 이벤트로 등록되어도 this를 컴포넌트 자신으로 제대로 가리키기 위해서는 메서드를 this와 **바인딩(binding)하는 과정**이 필요하다. 만약 바인딩하지 않는다면 this는 undefined를 가리키게 된다.
+
+#### Property Initializer Syntax를 이용한 메서드 작성
+
+메서드 바인딩은 생성자 메서드에서 하는 것이 정석이지만, 새 메서드를 만들 때마다 constructor도 수정해야 하는 불편함이 있다. 그렇기 때문에 바벨의 transform-class-properties 문법을 사용하여 화살표 함수 형태로 더욱 깔끔하게 메서드를 정의할 수 있다.
+
+```js
+import React, { Component } from "react";
+
+class EventPractice extends Component {
+  state = {
+    message: "",
+  };
+
+  handleChange = (e) => {
+    this.setState({
+      message: e.target.value,
+    });
+  };
+
+  handleClick = () => {
+    alert(this.state.message);
+    this.setState({
+      message: "",
+    });
+  };
+
+  render() {
+    return (
+      <div>
+        <h1>이벤트 연습</h1>
+        <input
+          type="text"
+          name="message"
+          placeholder="아무거나 입력해 보세요"
+          value={this.state.message}
+          onChange={this.handleChange}
+        />
+        <button onClick={this.handleClick}>확인</button>
+      </div>
+    );
+  }
+}
+
+export default EventPractice;
+```
+
+### input 여러 개 다루기
+
+input이 여러 개 일때는 메서드를 여러 개 만드는 것도 하나의 해법이지만, 더 쉽게 처리하는 방법이 있다. 바로 event 객체를 활용하는 것이다. onChange 이벤트 핸들러에서 e.target.name은 해당 인풋의 name(위 코드에서는 message)을 가리킨다. 이 값을 사용하여 state를 설정하면 쉽게 해결할 수 있다.
+
+```js
+import React, { Component } from "react";
+
+class EventPractice extends Component {
+  state = {
+    username: "",
+    message: "",
+  };
+
+  handleChange = (e) => {
+    this.setState({
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  handleClick = () => {
+    alert(this.state.username + ": " + this.state.message);
+    this.setState({
+      username: "",
+      message: "",
+    });
+  };
+
+  render() {
+    return (
+      <div>
+        <h1>이벤트 연습</h1>
+        <input
+          type="text"
+          name="username"
+          placeholder="사용자명"
+          value={this.state.username}
+          onChange={this.handleChange}
+        />
+        <input
+          type="text"
+          name="message"
+          placeholder="아무거나 입력해 보세요"
+          value={this.state.message}
+          onChange={this.handleChange}
+        />
+        <button onClick={this.handleClick}>확인</button>
+      </div>
+    );
+  }
+}
+
+export default EventPractice;
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/52b39d53-5230-4aec-9b95-e65cf3343e0b/image.gif)
+
+객체 안에서 key를 `[]`로 감싸면 그 안에 넣은 레퍼런스가 가리키는 실제 값이 key 값으로 사용된다.
+
+---
+
+## 함수형 컴포넌트로 구현해 보기
+
+```js
+import React, { useState } from "react";
+
+const EventPractice = () => {
+  const [username, setUsername] = useState("");
+  const [message, setMessage] = useState("");
+  const onChangeUsername = (e) => setUsername(e.target.value);
+  const onChangeMessage = (e) => setMessage(e.target.value);
+  const onClick = () => {
+    alert(username + ": " + message);
+    setUsername("");
+    setMessage("");
+  };
+
+  const onKeyPress = (e) => {
+    if (e.key === "Enter") {
+      onClick();
+    }
+  };
+
+  return (
+    <div>
+      <h1>이벤트 연습</h1>
+      <input
+        type="text"
+        name="username"
+        placeholder="사용자명"
+        value={username}
+        onChange={onChangeUsername}
+      />
+      <input
+        type="text"
+        name="message"
+        placeholder="아무거나 입력해 보세요"
+        value={message}
+        onChange={onChangeMessage}
+        onKeyPress={onKeyPress}
+      />
+      <button onClick={onClick}>확인</button>
+    </div>
+  );
+};
+
+export default EventPractice;
+```
+
+위 코드는 인풋이 두 개밖에 없기 때문에 onChange 관련 함수를 따로 만들어 구현하였다. 하지만 인풋의 개수가 많아질 것 같으면 e.target.name을 활용하는 편이 더 좋을 수 있다.
+
+```js
+import React, { useState } from "react";
+
+const EventPractice = () => {
+  const [form, setForm] = useState({
+    username: "",
+    message: "",
+  });
+  const { username, message } = form;
+  const onChange = (e) => {
+    const nextForm = {
+      ...form,
+      [e.target.name]: e.target.value,
+    };
+    setForm(nextForm);
+  };
+
+  const onClick = () => {
+    alert(username + ": " + message);
+    setForm({
+      username: "",
+      message: "",
+    });
+  };
+
+  const onKeyPress = (e) => {
+    if (e.key === "Enter") {
+      onClick();
+    }
+  };
+
+  return (
+    <div>
+      <h1>이벤트 연습</h1>
+      <input
+        type="text"
+        name="username"
+        placeholder="사용자명"
+        value={username}
+        onChange={onChange}
+      />
+      <input
+        type="text"
+        name="message"
+        placeholder="아무거나 입력해 보세요"
+        value={message}
+        onChange={onChange}
+        onKeyPress={onKeyPress}
+      />
+      <button onClick={onClick}>확인</button>
+    </div>
+  );
+};
+
+export default EventPractice;
+```
+
+e.target.name 값을 활용하려면, 위와 같이 useState를 쓸 때 인풋 값들이 들어 있는 form 객체를 사용해 주면 된다.
