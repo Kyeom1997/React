@@ -1237,3 +1237,126 @@ export default EventPractice;
 ```
 
 e.target.name 값을 활용하려면, 위와 같이 useState를 쓸 때 인풋 값들이 들어 있는 form 객체를 사용해 주면 된다.
+
+---
+
+# ref
+
+일반 HTML 에서 DOM 요소에 이름을 달 때는 id를 사용한다. HTML에서 id를 사용하여 DOM에 이름을 다는 것 처럼 리액트 프로젝트 내부에서 DOM에 이름을 다는 방법이 있다. 바로 ref(reference의 약어) 개념이다.
+
+> #### 리액트 컴포넌트 안에서는 id를 사용하면 안될까? <br>
+>
+> 리액트 컴포넌트 안에서도 id를 사용할 수는 있지만, 특수한 경우가 아니면 사용을 권장하지 않는다. 예를 들어 같은 컴포넌트를 여러 번 사용한다고 가정했을 때, HTML에서 DOM의 id는 유일(unique)해야 하는데, 이런 상황에서는 중복 id를 가진 DOM이 여러 개 생기니 잘못된 사용이다. 이런 상황에서는 컴포넌트를 만들 때마다 id 뒷 부분에 추가 텍스트를 붙여서 중복 id가 발생하는 것을 방지해야 한다.<br>
+> ref는 전역적으로 작동하지 않고 컴포넌트 내부에서만 작동하기 때문에 이런 문제가 생기지 않는다.
+
+## ref는 어떤 상황에서 사용해야 할까?
+
+ref는 **'DOM을 꼭 직접적으로 건드려야 할 때'** 사용해야 한다.
+
+### DOM을 꼭 사용해야 하는 상황
+
+- 특정 input에 포커스 주기
+
+- 스크롤 박스 조작하기
+
+- Canvas 요소에 그림 그리기 등
+
+---
+
+## ref 사용
+
+ref를 사용하는 방법은 두 가지이다.
+
+### 콜백 함수를 통한 ref 설정
+
+ref를 만드는 가장 기본적인 방법은 콜백 함수를 사용하는 것이다. ref를 달고자 하는 요소에 ref라는 콜백 함수를 props로 전달해 주면 된다. 이 콜백 함수는 ref 값을 파라미터로 전달받는다. 그리고 함수 내부에서 파라미터로 받은 ref를 컴포넌트의 멤버 변수로 설정해 준다.
+
+```js
+<input
+  ref={(ref) => {
+    this.input = ref;
+  }}
+/>
+```
+
+이렇게 하면 앞으로 this.input은 input 요소의 DOM을 가리킨다. ref의 이름은 원하는 것으로 자유롭게 지정할 수 있다.
+
+### createRef를 통한 ref 설정
+
+ref를 만드는 또 다른 방법은 리액트에 내장되어 있는 createRef라는 함수를 사용하는 것이다. 이 함수를 사용하면 더 적은 코드로 쉽게 ref를 사용할 수 있다.
+
+```js
+import React, { Component } from 'react';
+
+class RefSample extends Component {
+  input = React.createRef();
+
+  handleFocus = () => {
+    this.input.current.focus();
+  }
+
+  render() [
+    return (
+    	<div>
+    		<input ref={this.input} />
+		</div>
+		);
+	}
+}
+
+export default RefSample;
+```
+
+createRef를 사용하여 ref를 만들려면 우선 컴포넌트 내부에서 멤버 변수로 React.createRef()를 담아 주어야 한다. 그리고 해당 멤버 변수를 ref를 달고자 하는 요소에 ref props로 넣어 주면 ref 설정이 완료된다.
+
+설정한 뒤 나중에 ref를 설정해 준 DOM에 접근하려면 this.input.current를 조회하면 된다. 콜백 함수를 사용할 때와 다른 점은 이렇게 뒷부분에 .current를 넣어 주어야 한다는 것이다.
+
+---
+
+## 컴포넌트에 ref 달기
+
+리액트에서는 컴포넌트에도 ref를 달 수 있다. 이 방법은 주로 컴포넌트 내부에 있는 DOM을 컴포넌트 외부에서 사용할 때 쓴다.
+
+### 사용법
+
+```js
+<MyComponent
+  ref={(ref) => {
+    this.myComponent = ref;
+  }}
+/>
+```
+
+이렇게 하면 MyComponent 내부의 메서드 및 멤버 변수에도 접근할 수 있다. 즉, 내부의 ref에도 접근할 수 있다. (ex: myComponent.handleClick, myComponent.input ) 그럼, 실습을 통해 알아보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6d4beff2-feba-4425-9d40-6dd4ecce677c/image.png)
+
+### 컴포넌트 초기 설정
+
+#### 컴포넌트 파일 생성
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6ff62247-5d56-4aa0-bf9a-95fefe397af2/image.png)
+
+#### 컴포넌트에 메서드 생성
+
+자바스크립트로 스크롤바를 내릴 때는 DOM 노드가 가진 다음 값들을 사용한다.
+
+- scrollTop : 세로 스크롤바 위치 (0~350)
+
+- scrollHeight: 스크롤이 있는 박스 안의 div 높이(650)
+
+- clientHeight: 스크롤이 있는 박스의 높이(300)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/30ad1578-c7e5-4ae6-bfcd-fc9455c86cf0/image.png)
+
+이렇게 만든 메서드는 부모 컴포넌트인 App 컴포넌트에서 ScrollBox에 ref를 달면 사용할 수 있다.
+
+#### 컴포넌트에 ref 달고 내부 메서드 사용
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/2a621b05-ae82-4704-9adc-90249f9e54df/image.png)
+
+문법상으로는 onClick = {this.scrollBox.scrollBottom} 같은 형식으로 작성해도 틀린것은 아니지만, 컴포넌트가 처음 렌더링될 때는 this.scrollBox 값이 undefined이므로 this.scrollBox.scrollToBottom 값을 읽어 오는 과정에서 오류가 발생한다.
+
+이때 화살표 함수 문법을 사용하여 아예 새로운 함수를 만들고 그 내부에서 this.scrollBox.scrollToBottom 메서드를 실행하면, 버튼을 누를 때 this.scrollBox.scrollToBottom 값을 읽어 와서 실행하므로 오류가 발생하지 않는다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/07ac5ede-641d-4b0a-8db6-dbe59901fbfa/image.gif)
