@@ -1360,3 +1360,152 @@ createRef를 사용하여 ref를 만들려면 우선 컴포넌트 내부에서 �
 이때 화살표 함수 문법을 사용하여 아예 새로운 함수를 만들고 그 내부에서 this.scrollBox.scrollToBottom 메서드를 실행하면, 버튼을 누를 때 this.scrollBox.scrollToBottom 값을 읽어 와서 실행하므로 오류가 발생하지 않는다.
 
 ![](https://velog.velcdn.com/images/hang_kem_0531/post/07ac5ede-641d-4b0a-8db6-dbe59901fbfa/image.gif)
+
+---
+
+# 컴포넌트 반복
+
+웹 애플리케이션을 만들다 보면 다음과 같이 반복되는 코드를 작성할 때가 있다.
+
+```js
+import React from "react";
+
+const IterationSample = () => {
+  return (
+    <ul>
+      <li>눈사람</li>
+      <li>얼음</li>
+      <li>눈</li>
+      <li>바람</li>
+    </ul>
+  );
+};
+
+export default IterationSample;
+```
+
+지금은 li 태그 하나뿐이라 그렇게 문제가 되지는 않지만, 코드가 좀 더 복잡해진다면 코드의 양은 더욱 늘어날 것이며, 파일 용량도 증가할 것이다. 또 보여 주어야 할 데이터가 유동적이라면 이러한 코드로는 관리하기가 힘들다.
+
+## 자바스크립트 배열의 map() 함수
+
+자바스크립트 배열 객체의 내장 함수인 map 함수를 사용하여 반복되는 컴포넌트를 렌더링할 수 있다. map 함수는 파라미터로 전달된 함수를 사용해서 배열 내 각 요소를 원하는 규칙에 따라 변환한 후 그 결과로 새로운 배열을 생성한다.
+
+### 문법
+
+```js
+arr.map(callback, [thisArg]);
+```
+
+이 함수의 파라미터는 다음과 같다.
+
+- callback: 새로운 배열의 요소를 생성하는 함수로 파라미터는 다음 세가지이다.
+
+  - currentValue: 현재 처리하고 있는 요소
+
+  - index: 현재 처리하고 있는 요소의 index 값
+
+  - array: 현재 처리하고 있는 원본 배열
+
+- thisArg(선택 항목): callback 함수 내부에서 사용할 this 레퍼런스
+
+### 예제
+
+```js
+const numbers = [1, 2, 3, 4, 5];
+const result = numbers.map((num) => num * num);
+console.log(result);
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/9477d5a7-864e-4098-9296-e536b7b8af49/image.png)
+
+---
+
+## 데이터 배열을 컴포넌트 배열로 변환하기
+
+map() 함수를 사용하여 기존 배열로 컴포넌트로 구성된 배열을 생성할 수도 있다.
+
+### 컴포넌트 수정하기
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/bd090ab6-1fb4-4b2c-b9e2-dc24b3243f59/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/ba8f3297-80d9-4e7c-bcf0-a468b93f8f31/image.png)
+
+App 컴포넌트에서 해당 컴포넌트를 렌더링하면 원하는 대로 렌더링이 된 것처럼 보인다. 하지만 크롬 개발자 도구의 콘솔을 열어 보면 경고 메시지가 표시되어 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/d1597256-a1e3-42eb-b174-b184bd37c4a6/image.png)
+
+해당 경고 메시지는 'key' prop이 없다는 뜻이다. key란 무엇일까?
+
+---
+
+## key
+
+리액트에서 key는 컴포넌트 배열을 렌더링했을 때 어떤 원소에 변동이 있었는지 알아내려고 사용한다. key가 없을 때는 Virtual DOM을 비교하는 과정에서 리스트를 순차적으로 비교하면서 변화를 감지하지만, key가 있다면 그 값을 사용하여 어떤 변화가 일어났는지 더욱 빠르게 알아낼 수 있다.
+
+### key 설정
+
+key 값을 설정할 때는 map 함수의 인자로 전달되는 함수 내부에서 컴포넌트 props를 설정하듯이 설정하면 된다. key 값은 언제나 유일해야 하기 때문에, 데이터가 가진 고윳값을 key 값으로 설정해야 한다.
+
+```js
+const articleList = articles.map(article => (
+  <Article
+  		title={article.title}
+        writer={article.writer}
+		key={article.id}
+  />
+ );
+```
+
+앞서 만들었던 컴포넌트에는 이런 고유 번호가 없는데, 이때는 map 함수에 전달되는 콜백 함수의 인수인 index 값을 사용하면 된다. 고유한 값이 없을때만 index 값을 key로 사용해야 하며, index를 key로 사용하면 배열이 변경될 때 효율적으로 리렌더링하지 못한다는 단점이 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/5e3112b4-6062-4f91-8d30-26116c854a2c/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/b86918bb-d8f3-486e-8c64-75e08e1499e4/image.png)
+
+## 응용
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/b8ab6de3-7237-4fcd-a4fa-5a957ce44a28/image.png)
+
+### 초기 상태 설정하기
+
+앞서 만들었던 컴포넌트에 useState를 통해 상태를 설정하자. 하나는 데이터 배열이고, 다른 하나는 텍스트를 입력할 수 있는 Input의 상태이며, 마지막 하나는 데이터 배열에서 새로운 항목을 추가할 때 사용할 고유 id를 위한 상태이다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/10572d42-01e7-4d74-a24c-f868d9aed303/image.png)
+
+### 데이터 추가 기능 구현하기
+
+이제 새로운 이름을 등록할 수 있는 기능을 구현해보자. 우선 ul 태그의 상단에 input과 button을 렌더링하고, input의 상태를 관리해보자.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/f792426e-07ca-4993-b0b9-c1432e6b77ab/image.png)
+
+그 다음에는 버튼을 클릭했을 때 호출할 onClick 함수를 선언하여 버튼의 onClick 이벤트로 설정하였다. onClick 함수에서는 배열의 내장 함수 concat을 사용하여 새로운 항목을 추가한 배열을 만들고, setName를 통해 상태를 업데이트 해 준다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/7b5d039c-2fda-43a2-8d55-31252bef2ff2/image.png)
+
+배열에 새 항목을 추가할 때 배열의 push 함수를 사용하지 않고 concat을 사용했는데, push는 기본 배열 자체를 변경해 주는 반면, concat은 새로운 배열을 만들어 준다는 차이점이 있다.
+
+리액트에서 상태를 업데이트할 때는 기존 상태를 그대로 두면서 새로운 값을 상태로 설정해야 하는데, 이를 불변성 유지라고 한다. 불변성 유지를 해 주어야 나중에 리액트 컴포넌트의 성능을 최적화할 수 있다.
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/00162dc3-321c-48b8-a1b9-72a960e3fc4d/image.gif)
+
+### 데이터 제거 기능 구현하기
+
+이번에는 각 항목을 더블클릭했을 때 해당 항목이 화면에서 사라지는 기능을 구현해 보자. 이번에도 마찬가지로 불변성을 유지하면서 업데이트를 진행하여야 하는데, 이를 유지하면서 배열의 특정 항목을 지울 때는 배열의 내장 함수 filter를 사용한다.
+
+filter 함수를 사용하면 배열에서 특정 조건을 만족하는 원소들만 쉽게 분류할 수 있다.
+
+```js
+const numbers = [1, 2, 3, 4, 5, 6];
+const biggerThanThree = numbers.filter((number) => number > 3);
+// [4, 5, 6]
+```
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/21bc8eb4-5439-4276-8fba-cef11a610a9d/image.png)
+
+![](https://velog.velcdn.com/images/hang_kem_0531/post/6f0e84d4-4ed4-4b5c-8adc-6517cc5a31e3/image.gif)
+
+## 정리
+
+컴포넌트 배열을 렌더링할 때는 key 값 설정에 항상 주의해야 한다. 또 key 값은 언제나 유일해야 하며, key 값이 중복된다면 렌더링 과정에서 오류가 발생한다.
+
+상태 안에서 배열을 변형할 때는 배열에 직접 접근하여 수정하는 것이 아니라 concat, filter 등의 배열 내장 함수를 사용하여 새로운 배열을 만든 후 이를 새로운 상태로 설정해 주어야 한다.
